@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "783899615285",
+    "project_id": "ovo-vpn-f5594",
+    "storage_bucket": "ovo-vpn-f5594.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783899615285:android:81dbe98c9ec49a6c83917c",
+        "android_client_info": {
+          "package_name": "dev.ovo.vpn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783899615285-edadakm1m32klumgkidcg6elc4d6va65.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLrOOdQTJE_IdpZqpfARNTA7pukVMSl04"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783899615285-edadakm1m32klumgkidcg6elc4d6va65.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
