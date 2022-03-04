@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vpn/controller/vpn_controller.dart';
 import 'package:vpn/model/vpn.dart';
 
 class ServerListUI extends StatefulWidget {
@@ -16,6 +21,8 @@ final vpnsRef =
         );
 
 class _ServerListUIState extends State<ServerListUI> {
+  VpnController vpnController = Get.find();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,18 +57,30 @@ class _ServerListUIState extends State<ServerListUI> {
   }
 
   Widget item({required Vpn vpn}) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      margin: const EdgeInsets.only(top: 5, left: 8, right: 8),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10), color: Colors.grey.shade200),
-      child: ListTile(
-        contentPadding: const EdgeInsets.only(left: 5),
-        leading: Image.asset("assets/flag/${vpn.cod}.png", height: 35),
-        title: Text(
-          vpn.serverName!,
-          style:
-              const TextStyle(color: Colors.black, fontWeight: FontWeight.w800),
+    return GestureDetector(
+      onTap: () async {
+        final prefs = await SharedPreferences.getInstance();
+        String vpndata = jsonEncode(vpn);
+        print(vpndata);
+        await prefs.setString('vpnData', vpndata);
+        await prefs.setBool('haveVpn', true);
+        vpnController.getVPN();
+        Get.back();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        margin: const EdgeInsets.only(top: 5, left: 8, right: 8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.grey.shade200),
+        child: ListTile(
+          contentPadding: const EdgeInsets.only(left: 5),
+          leading: Image.asset("assets/flag/${vpn.cod}.png", height: 35),
+          title: Text(
+            vpn.serverName!,
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.w800),
+          ),
         ),
       ),
     );

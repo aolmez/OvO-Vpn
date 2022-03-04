@@ -1,9 +1,12 @@
 import 'dart:io';
-
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:openvpn_flutter/openvpn_flutter.dart';
 import 'package:vpn/Router/route.dart';
+import 'package:vpn/controller/vpn_controller.dart';
+import 'package:vpn/model/vpn.dart';
 
 class HomeUI extends StatefulWidget {
   const HomeUI({Key? key}) : super(key: key);
@@ -41,9 +44,10 @@ class _HomeUIState extends State<HomeUI> {
     super.initState();
   }
 
-  Future<void> initPlatformState() async {
-    engine.connect(config, "USA",
-        username: defaultVpnUsername, password: defaultVpnPassword);
+  Future<void> initPlatformState({required Vpn vpn}) async {
+    engine.connect(
+        utf8.fuse(base64).decode(vpn.config!), vpn.serverName ?? "OvO Server",
+        username: vpn.username, password: vpn.password);
     if (!mounted) return;
   }
 
@@ -61,11 +65,11 @@ class _HomeUIState extends State<HomeUI> {
             GestureDetector(
               onTap: () {
                 // FirebaseFirestore.instance.collection("vpnServer").add({
-                //   "server_name": "USA",
-                //   "cod": "US",
-                //   "config": "ZGV2IHR1biAKcHJvdG8gdGNwIApyZW1vdGUgcHVibGljLXZwbi0xNzMub3Blbmd3Lm5ldCA0NDMgCjtodHRwLXByb3h5LXJldHJ5CjtodHRwLXByb3h5IFtwcm94eSBzZXJ2ZXJdIFtwcm94eSBwb3J0XSAKY2lwaGVyIEFFUy0xMjgtQ0JDCmF1dGggU0hBMSAKcmVzb2x2LXJldHJ5IGluZmluaXRlCm5vYmluZApwZXJzaXN0LWtleQpwZXJzaXN0LXR1bgpjbGllbnQKdmVyYiAzIAo8Y2E+Ci0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlGM2pDQ0E4YWdBd0lCQWdJUUFmMXRNUHlqeWxHb0c3eGtEalVETFRBTkJna3Foa2lHOXcwQkFRd0ZBRENCCmlERUxNQWtHQTFVRUJoTUNWVk14RXpBUkJnTlZCQWdUQ2s1bGR5QktaWEp6WlhreEZEQVNCZ05WQkFjVEMwcGwKY25ObGVTQkRhWFI1TVI0d0hBWURWUVFLRXhWVWFHVWdWVk5GVWxSU1ZWTlVJRTVsZEhkdmNtc3hMakFzQmdOVgpCQU1USlZWVFJWSlVjblZ6ZENCU1UwRWdRMlZ5ZEdsbWFXTmhkR2x2YmlCQmRYUm9iM0pwZEhrd0hoY05NVEF3Ck1qQXhNREF3TURBd1doY05Nemd3TVRFNE1qTTFPVFU1V2pDQmlERUxNQWtHQTFVRUJoTUNWVk14RXpBUkJnTlYKQkFnVENrNWxkeUJLWlhKelpYa3hGREFTQmdOVkJBY1RDMHBsY25ObGVTQkRhWFI1TVI0d0hBWURWUVFLRXhWVQphR1VnVlZORlVsUlNWVk5VSUU1bGRIZHZjbXN4TGpBc0JnTlZCQU1USlZWVFJWSlVjblZ6ZENCU1UwRWdRMlZ5CmRHbG1hV05oZEdsdmJpQkJkWFJvYjNKcGRIa3dnZ0lpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElDRHdBd2dnSUsKQW9JQ0FRQ0FFbVVYTmc3RDJ3aXowS3hYRFhidHpTZlRUSzFRZzJIaXFpQk5DUzFrQ2R6T2laL01QYW5zOXMvQgozUEhUc2RaN055Z1JLMGZhT2NhOE9obTBYNmE5ZloyalkwSzJkdktwT3l1UitPSnYwT3dXSUpBSlB1TG9kTWtZCnRKSFVZbVRiZjZNRzhZZ1lhcEFpUEx6K0UvQ0hGSHYyNUIrTzFPUlJ4aEZuUmdoUnk0WVVWRCs4TS81K2JKei8KRnAwWXZWR09OYWFuWnNoeVo5c2hackhVbTNnRHdGQTY2TXp3M0x5ZVRQNnZCWlkxSDFkYXQvL08rVDIzTExiMgpWTjNJNXhJNlRhNU1pcmRjbXJTM0lEM0tmeUkwcm40N2FHWUJST2NCVGtaVG16Tmc5NVMrVXplUWMwUHpNc05UCjc5dXEvblJPYWNkcmpHQ1Qzc1RIRE4vaE1xN01renRSZUpWbmkrNDlWdjRNMEdrUEd3L3pKU1pyTTIzM2JrZjYKYzBQbGZnNmxackVwZkRLRVkxV0p4QTNCazFRd0dST3MwMzAzcCt0ZE9tdzFYTnRCMXhMYXFVa0wzOWlBaWdtVApZbzYxWnM4bGlNMkV1TEUvcERrUDJRS2U2eEpNbFh6emF3V3BYaGFEekxobjR1Z1RuY3hiZ3ROTXMrMWIvOTdsCmM2d2pPeTBBdnpWVmRBbEoyRWxZR24rU051WlJrZzd6Sm4wY1RSZTh5ZXhESnRDL1FWOUFxVVJFOUpublY0ZWUKVUI5WFZLZysvWFJqTDdGUVpRbm1XRUl1UXhwTXRQQWxSMW42QkI2VDFDWkdTbENCc3Q2K2VMZjhaeFhoeVZlRQpIZzlqMXVsaXV0WmZWUzdxWE1Zb0NBUWxPYmdPSzZueVRKY2NCejhOVXZYdDd5K0NEd0lEQVFBQm8wSXdRREFkCkJnTlZIUTRFRmdRVVUzbS9XcW9yU3M5VWdPSFltOENkOHJJRFpzc3dEZ1lEVlIwUEFRSC9CQVFEQWdFR01BOEcKQTFVZEV3RUIvd1FGTUFNQkFmOHdEUVlKS29aSWh2Y05BUUVNQlFBRGdnSUJBRnpVZkEzUDl3RjlRWmxsREhQRgpVcC9MK00rWkJuOGIya01WbjU0Q1ZWZVdGUEZTUENlSGxDanRIem9CTjZKMi9GTlF3SVNieG10T3Vvd2hUNktPClZXS1I4MmtWMkx5STQ4U3FDLzN2cU9sTFZTb0dJRzFWZUNrWjdsOHdYRXNrRVZYL0pKcHVYaW9yN2d0Tm4zLzMKQVRpVUZKVkRCd243WUtudUhLc1NqS0NhWHFlWWFsbHRpejhJKzhqUlJhOFlGV1NRRWc5ektDN0Y0aVJPL0Zqcwo4UFJGL2lLejZ5K08wdGxGWVFYQmwyK29kbktQaTR3MnI3OE5CYzV4amVhbWJ4OXNwbkZpeGRqUWczSU04V2NSCmlReWNFMHh5Tk4rODFYSGZxbkhkNGJsc2pEd1NYV1hhdlZjU3RrTnIvK1hlVFdZUlVjK1pydXdYdHVoeGtZemUKU2Y3ZE5YR2lGU2VVSE05aDR5YTdiNk5uSlNGZDV0MGRDeTVvR3p1Q3IreURaNFhVbUZGMHNibVpnSW4vZjNnWgpYSGxLWUM2U1FLNU1OeW9zeWNkaXlBNWQ5elpieXVBbEpRRzAzUm9IbkhjQVA5RGMxZXc5MVBxN1A4eUYxbTkvCnFTM2Z1UUwzOVplYXRUWGF3MmV3aDBxcEtKNGpqdjljSjJ2aHNFL3pCKzRBTHRSWmg4dFNRWlhxOUVmWDdtUkIKVlh5TldRS1YzV0tkd3JudVdpaDBoS1didDVESERBZmY5WWsyZERMV0tNR3dzQXZnbkV6REhOYjg0Mm0xUjBhQgpMNktDcTlOalJIREVqZjh0TTdxdGozdTFjSWl1UGhuUFFDalkvTWlRdTEyWkl2VlM1bGpGSDRneFErNklIZGZHCmpqeERhaDJuR041OVBSYnhZdm5La0tqOQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCgo8L2NhPgogCjxjZXJ0PgotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQ3hqQ0NBYTRDQVFBd0RRWUpLb1pJaHZjTkFRRUZCUUF3S1RFYU1CZ0dBMVVFQXhNUlZsQk9SMkYwWlVOcwphV1Z1ZEVObGNuUXhDekFKQmdOVkJBWVRBa3BRTUI0WERURXpNREl4TVRBek5EazBPVm9YRFRNM01ERXhPVEF6Ck1UUXdOMW93S1RFYU1CZ0dBMVVFQXhNUlZsQk9SMkYwWlVOc2FXVnVkRU5sY25ReEN6QUpCZ05WQkFZVEFrcFEKTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE1aDJsZ1FRWVVqd29LWUpielZaQQo1VmNJR2Q1b3RQYy9xWlJNdDBLSXRDRkEwczlSd1JlTlZhOWZEUkZMUkJoY0lUT2x2M0ZCY1czRThoMVVzN1JECjRXOEdtSmU4emFwSm5Mc0QzOU9TTVJDelpKbmN6VzRPQ0gxUFpSWldLcUR0amxOY2E5QUY4YTY1alRtbER4Q1EKQ2pudExJV2s1T0xMVmtGdDkvdFNjYzFHRHRjaTU1b2ZoYU5BWU1QaUg3VjgrMWc2NnBHSFhBb1dLNkFRVkg2NwpYQ0tKbkdCNW5sUStIc01ZUFYvTzQ5TGQ5MVpOLzJ0SGtjYUxMeU50eXd4VlBSU3NSaDQ4MGpqdTBmY0NzdjZoCnAvMHlYblRCLy9tV3V0QkdwZFVsSWJ3aUlUYkFtcnNiWW5qaWdSdm5QcVgxUk5KVWJpOUZwNkMyYy9ISUZKR0QKeXdJREFRQUJNQTBHQ1NxR1NJYjNEUUVCQlFVQUE0SUJBUUNoTzVoZ2N3LzRvV2ZvRUZMdTlrQmExQi8va3hIOApoUWtDaFZObjhCUkM3WTBVUlFpdFBsM0RLRWVkOVVSQkRkZzJLT0F6NzdiYjZFTlBpbGlEK2EzOFVKSElSTXFlClVCSGhsbE9ISXp2RGhIRmJhb3ZBTEJRY2VlQnpka1F4c0tRRVNLbVFtUjgzMjk1MFVDb3ZveVJCNjFVeUFWN2gKK21aaFlQR1JLWEtTSkk2czBFZ2cvQ3JpK0N3azRiakpmcmI1aFZzZTExeWg0RDlNSGh3U2ZDT0grMHo0aFBVVApGa3U3ZEdhdlVSTzVTVnhNbi9zTDZFbjVEK29TZVhrYWRIcERzK0FpcnltMllIaDE1aDAralBTT29SNnlpVnAvCjZ6WmVaa3JONDNrdVM3M0twS0RGamZGUGg4dDRyMWdPSWp0dGtOY1FxQmNjdXNucGxRN0hKcHNrCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KCjwvY2VydD4KCjxrZXk+Ci0tLS0tQkVHSU4gUlNBIFBSSVZBVEUgS0VZLS0tLS0KTUlJRXBBSUJBQUtDQVFFQTVoMmxnUVFZVWp3b0tZSmJ6VlpBNVZjSUdkNW90UGMvcVpSTXQwS0l0Q0ZBMHM5Ugp3UmVOVmE5ZkRSRkxSQmhjSVRPbHYzRkJjVzNFOGgxVXM3UkQ0VzhHbUplOHphcEpuTHNEMzlPU01SQ3paSm5jCnpXNE9DSDFQWlJaV0txRHRqbE5jYTlBRjhhNjVqVG1sRHhDUUNqbnRMSVdrNU9MTFZrRnQ5L3RTY2MxR0R0Y2kKNTVvZmhhTkFZTVBpSDdWOCsxZzY2cEdIWEFvV0s2QVFWSDY3WENLSm5HQjVubFErSHNNWVBWL080OUxkOTFaTgovMnRIa2NhTEx5TnR5d3hWUFJTc1JoNDgwamp1MGZjQ3N2NmhwLzB5WG5UQi8vbVd1dEJHcGRVbElid2lJVGJBCm1yc2JZbmppZ1J2blBxWDFSTkpVYmk5RnA2QzJjL0hJRkpHRHl3SURBUUFCQW9JQkFFUlY3WDVBdnhBOHVSaUsKazhTSXBzRDBkWDFwSk9NSXdha1VWeXZjNEVmTjBEaEtSTmI0cllvU2lFR1RMeXpMcHlCYy9BMjhEbGttNWVPWQpmanpYZllrR3RZaS9GdHhrZzNPOXZjck1RNCs2aSt1R0hhSUwyckwrczRNcmZPOHYxeHY2K1dreTMzRUVHQ291ClFpd1ZHUkZRWG5Sb1E2Mk5CQ0ZiVU5MaG1Yd2RqMWFrWnpMVTRwNVI0ekEzUWhkeHdFSWF0Vkx0MCs3b3dMUTMKbFA4c2ZYaHBwUE9YalRxTUQ0UWtZd3pQQWE4L3pGN2FjbjRrcnlyVVA3UTZQQWZkMHpFVnFOeTlaQ1o5ZmZobwp6WGVkRmo0ODZJRm9jNWduVHAyTjZqc25WajRMQ0dJaGxWSGxZR296S0tGcUpjUVZHc0hDcXExb3oyempXNkxTCm9SWUlIZ0VDZ1lFQTh6WnJrQ3dOWVNYSnVPREozbS9oT0xWeGN4Z0p1d1hvaUVyV2QwRTQydlBhbmpqVk1obnQKS1k1bDhxR01KNkZoSzlMWXgycUNyZi9FMFh0VUFaMndWcTNPUlR5R25zTVdyZTl0TFlzNTVYK1pOMTBUYzc1ego0aGFjYlUwaHFLTjFIaURtc01SWTMvMk5hWkhveTdNS253SkpCYUc0OGw5Q0NUbFZ3TUhvY0lFQ2dZRUE4amJ5CmRHanhUSCs2WEhXTml6YjVTUmJaeEFueUVlSmVSd1RNaDBnR3p3R1BwSC9zWllHenl1MFN5U1hXQ25aaDNSZ3EKNXVMbE54dHJYcmxqWmx5aTJuUWRRZ3NxMllyV1VzMCt6Z1UrMjJ1UXNacFNBZnRtaFZydHZldDZNalZqYkJ5WQpEQURjaUVWVWRKWUlYaytxbkZVSnllcm9MSWtUajdXWUtaNlJqa3NDZ1lCb0NGSXdSRGVnNDJvSzg5UkZtbk9yCkx5bU5BcTQrMm9NaHNXbFZiNGVqV0lXZUFrOW5jK0dYVWZyWHN6UmhTMDFtVW5VNXI1eWdVdlJjYXJWL1QzVTcKVG5NWitJN1k0RGdXUklEZDUxem5oeElCdFlWNWovQy90ODVIanFPa0grOGI2UlRrYmNoYVgzbWF1N2ZwVWZkcwpGcTBuaElxNDJmaEVPOHNyZllZd2dRS0JnUUN5aGkxTi84dGFSd3BrKzMvSURFelF3amJmZHpVa1dXU0RrOVhzCkgvcGt1UkhXZlRNUDNmbFdxRVlnVy9MVzQwcGVXMkhEcTVpbWRWOCtBZ1p4ZS9YTWJhamk5TGd3ZjFSWTAwNW4KS3hhWlF6N3lxSHVwV2xMR0Y2OERQSHhrWlZWU2FnRG5WL3N6dFdYNlNGc0NxRlZueElYaWZYR0M0Y1c1Tm05Zwp2YThxNFFLQmdRQ0VoTFZlVWZkd0t2a1o5NGcvR0Z6NzMxWjJocmRWaGdNWmFVL3U2dDBWOTUrWWV6UE5DUVpCCndtRTlNbWxicTFlbURlUk9pdmpDZm9HaFIza1pYVzFwVEtsTGg2Wk1VUVVPcHB0ZFh2YThYeGZvcVF3YTNlbkEKTTdtdUJiRjBYTjdWTzgwaUpQditQbUlaZEVJQWtwd0tmaTIwMVlCK0JhZkNJdUd4SUY1MFZnPT0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0KCjwva2V5PgoK",
-                //   "username":"",
-                //   "password":""
+                //   "server_name": "Canada (Montreal)",
+                //   "cod": "CN",
+                //   "config": "IyBBdXRvbWF0aWNhbGx5IGdlbmVyYXRlZCBPcGVuVlBOIGNsaWVudCBjb25maWcgZmlsZQojIEdlbmVyYXRlZCBvbiBGcmkgTWFyICA0IDEzOjI2OjQ1IDIwMjIgYnkgaXAtMTcyLTI2LTEtMjI2LmNhLWNlbnRyYWwtMS5jb21wdXRlLmludGVybmFsCgojIERlZmF1bHQgQ2lwaGVyCmNpcGhlciBBRVMtMjU2LUNCQwojIE5vdGU6IHRoaXMgY29uZmlnIGZpbGUgY29udGFpbnMgaW5saW5lIHByaXZhdGUga2V5cwojICAgICAgIGFuZCB0aGVyZWZvcmUgc2hvdWxkIGJlIGtlcHQgY29uZmlkZW50aWFsIQojIE5vdGU6IHRoaXMgY29uZmlndXJhdGlvbiBpcyB1c2VyLWxvY2tlZCB0byB0aGUgdXNlcm5hbWUgYmVsb3cKIyBPVlBOX0FDQ0VTU19TRVJWRVJfVVNFUk5BTUU9b3ZvCiMgRGVmaW5lIHRoZSBwcm9maWxlIG5hbWUgb2YgdGhpcyBwYXJ0aWN1bGFyIGNvbmZpZ3VyYXRpb24gZmlsZQojIE9WUE5fQUNDRVNTX1NFUlZFUl9QUk9GSUxFPW92b0AxNzIuMjYuMS4yMjYKIyBPVlBOX0FDQ0VTU19TRVJWRVJfQ0xJX1BSRUZfQUxMT1dfV0VCX0lNUE9SVD1UcnVlCiMgT1ZQTl9BQ0NFU1NfU0VSVkVSX0NMSV9QUkVGX0JBU0lDX0NMSUVOVD1GYWxzZQojIE9WUE5fQUNDRVNTX1NFUlZFUl9DTElfUFJFRl9FTkFCTEVfQ09OTkVDVD1UcnVlCiMgT1ZQTl9BQ0NFU1NfU0VSVkVSX0NMSV9QUkVGX0VOQUJMRV9YRF9QUk9YWT1UcnVlCiMgT1ZQTl9BQ0NFU1NfU0VSVkVSX1dTSE9TVD0xNzIuMjYuMS4yMjY6NDQzCiMgT1ZQTl9BQ0NFU1NfU0VSVkVSX1dFQl9DQV9CVU5ETEVfU1RBUlQKIyAtLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KIyBNSUlESERDQ0FnU2dBd0lCQWdJRVlpSUZQakFOQmdrcWhraUc5dzBCQVFzRkFEQkhNVVV3UXdZRFZRUURERHhQCiMgY0dWdVZsQk9JRmRsWWlCRFFTQXlNREl5TGpBekxqQTBJREV5T2pJMU9qTTBJRlZVUXlCcGNDMHhOekl0TWpZdAojIE1TMHlNall1WTJFdFkyVXdIaGNOTWpJd01qSTFNVEl5TlRNMFdoY05Nekl3TXpBeE1USXlOVE0wV2pCSE1VVXcKIyBRd1lEVlFRREREeFBjR1Z1VmxCT0lGZGxZaUJEUVNBeU1ESXlMakF6TGpBMElERXlPakkxT2pNMElGVlVReUJwCiMgY0MweE56SXRNall0TVMweU1qWXVZMkV0WTJVd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFSwojIEFvSUJBUURDc3RDYkNnOHBjdkt4b2g4Tks5eXdZZDZLWjM1THNOdTdzYWFLOHM1a1pieXQxdUMvQm1IMldROUIKIyBFa3ZheXlMTFlsdGFpT05QUjNPMXJGZ3MxMm9pV1B6ZUs2QS9GdmlUQ1pYTmtkMFlPQ0pPY2VtV04vRlFxbklJCiMgREVLZGdWUm41SmNneERwSzBuRTlxSXpMSldaQkloSFBXeXVvdHZBRGtaRTVScTJJVWtlWm4yOHd0NlhpMS9XOQojIDd0c0dLTWJQLzVlQ09MVHpCbW5Td05YeWpoSzU5Rm82bk9DYzE4UEVMWkU0T1ZyOW9FeUphd2R2b1dQQVNkNncKIyBGeWdzeHprZGY1a0w1RXJ3NGxMMXNNbUpkdEQyZUFJcmVqcjVWUWJ6bVBpVmkvZ0pZMExPbTh2WlVRRy9ybktHCiMgNEVVdk0rSitzRFYwOFUzUFViWVFMNUI2WkhjTkFnTUJBQUdqRURBT01Bd0dBMVVkRXdRRk1BTUJBZjh3RFFZSgojIEtvWklodmNOQVFFTEJRQURnZ0VCQUVzSHB3anN5UnVTd0o4eXVNSDA1eGw2NUxtTTZyMnplNEp1ajR6eGJvSksKIyBDYnVqaUZtYVlMSmlxcmNnN3RMejBYa1BjdUNUaWJWdHhRYktYclpJTitJV0prTmp4aXVxc3RQUmZhbi8vZmNyCiMgenNnM0RoazF1ZFlLYXZvb2NGQkd2N0dOYy8zMDJqL2gwa080clBDWHVnM0Y1aTJnLzhjU2k2S1M1WTdzWTJJZAojIGJiNll1VWhad2VuTnpsZ1VnaU83TmZKSXpUelJBTWROVTdteU5zQndnSEhPZVFxOW9KTHAvTTBrVk5nSHhOeVkKIyBaWGl1OWt4Y2x0QXkrVVVNcTQ2ZGJHTVVxd1RZNkdsWm9zL05Nb3B4MzFtVmY3aDdWNk55VkU1ZldqUW5jNlViCiMgTzBmeUtNaUNnaWxZOEJ0WFpXa1lSMSsyVW82ZEluQkkyUmlhdWFXbHRaND0KIyAtLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCiMgT1ZQTl9BQ0NFU1NfU0VSVkVSX1dFQl9DQV9CVU5ETEVfU1RPUAojIE9WUE5fQUNDRVNTX1NFUlZFUl9JU19PUEVOVlBOX1dFQl9DQT0xCiMgT1ZQTl9BQ0NFU1NfU0VSVkVSX09SR0FOSVpBVElPTj1PcGVuVlBOLCBJbmMuCnNldGVudiBGT1JXQVJEX0NPTVBBVElCTEUgMQpjbGllbnQKc2VydmVyLXBvbGwtdGltZW91dCA0Cm5vYmluZApyZW1vdGUgMTcyLjI2LjEuMjI2IDExOTQgdWRwCnJlbW90ZSAxNzIuMjYuMS4yMjYgMTE5NCB1ZHAKcmVtb3RlIDE3Mi4yNi4xLjIyNiA0NDMgdGNwCnJlbW90ZSAxNzIuMjYuMS4yMjYgMTE5NCB1ZHAKcmVtb3RlIDE3Mi4yNi4xLjIyNiAxMTk0IHVkcApyZW1vdGUgMTcyLjI2LjEuMjI2IDExOTQgdWRwCnJlbW90ZSAxNzIuMjYuMS4yMjYgMTE5NCB1ZHAKcmVtb3RlIDE3Mi4yNi4xLjIyNiAxMTk0IHVkcApkZXYgdHVuCmRldi10eXBlIHR1bgpucy1jZXJ0LXR5cGUgc2VydmVyCnNldGVudiBvcHQgdGxzLXZlcnNpb24tbWluIDEuMCBvci1oaWdoZXN0CnJlbmVnLXNlYyA2MDQ4MDAKc25kYnVmIDEwMDAwMApyY3ZidWYgMTAwMDAwCmF1dGgtdXNlci1wYXNzCiMgTk9URTogTFpPIGNvbW1hbmRzIGFyZSBwdXNoZWQgYnkgdGhlIEFjY2VzcyBTZXJ2ZXIgYXQgY29ubmVjdCB0aW1lLgojIE5PVEU6IFRoZSBiZWxvdyBsaW5lIGRvZXNuJ3QgZGlzYWJsZSBMWk8uCmNvbXAtbHpvIG5vCnZlcmIgMwpzZXRlbnYgUFVTSF9QRUVSX0lORk8KCjxjYT4KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN1RENDQWFDZ0F3SUJBZ0lFWWlJRlBUQU5CZ2txaGtpRzl3MEJBUXNGQURBVk1STXdFUVlEVlFRRERBcFAKY0dWdVZsQk9JRU5CTUI0WERUSXlNREl5TlRFeU1qVXpNMW9YRFRNeU1ETXdNVEV5TWpVek0xb3dGVEVUTUJFRwpBMVVFQXd3S1QzQmxibFpRVGlCRFFUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCCkFOQjlJRGtOdkFpdVpYNlJaekRsYys1bDJLSVBVWkd0ZGR2b0pRdktFUElWR1A0TlprcTArWitZcGRVTU1lSVUKaHpxRXYwRExMMUY3aE1IQlRSNHlZQU0wSjd3ZDNYaWIxbHBqNndoQ21GS1h4RHc5V0t2SEg3dFNXcDBhcXR2eQpFaVFrcSs2TFZrV0V5c1B2OGNORGpVZ3VETFc3bGNtdDMzNUR2SVhMenFnZE5mVTdEcTUwdVB0TlAvYXlMSDVhCjdmSHBRK2J6aTUxNkNtMGx0SmVtNWx3bEtOS2cyMTBTTExzRWg5Y1gvTWVqcUE3OGFCYUpqUHI2VEFKR2xKQWQKQ00ySFlBMmdJNWgzWFRCamZjWWFLcUFlanlJNnNpekkwcUcwVk13YWhueWRlalhPS25XRUVxVTdualBQMjZ4YQorU3k0OXh0MmE4ZHlUTXNCNHdGV2NTRUNBd0VBQWFNUU1BNHdEQVlEVlIwVEJBVXdBd0VCL3pBTkJna3Foa2lHCjl3MEJBUXNGQUFPQ0FRRUF4YjZPWEpFUktaRVV3OVZOZkR1TEtMVFc4VUNOcWFFTkZXbXYyN2FUSmJFcUFVVWoKMCs5WFpIRklZdWVBWVJXM1VpaExlaFJSZnhYRVB5Tm9zclRkVXYraEZjaHl0T0lUMVRldFBpbjB1Wi9jUzJmbQpBQ3RJcDRnQWRHeWtiOXBTYUhBL0RENXcxUThBOU9qWmJBYmFNUVlIMWM1OTNJV3ZvMWtZaWFwN3pNamUxRHUvCkswS01idDNRK3FKck95S2VHajA2T21TN2xTUkxPU0svSm0wQkhrWm5jc01Fb0EwVk9KcmkvaUtuRUNlMlk2SEEKUW4xNnU0QmQySVR6Y0hSYk1zQUdSd3l3eFJEUXo4Ky9EUDlMNGJEUGcwbms2UjBCeURIejNyQnc2WkpHNGtCbQpBVXpKQTNSTlNyTnFmbjh2dmpMcFNGZWFVdDBuWk9EaXJicmNZUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KPC9jYT4KCjxjZXJ0PgotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQ3ZqQ0NBYWFnQXdJQkFnSUJBakFOQmdrcWhraUc5dzBCQVFzRkFEQVZNUk13RVFZRFZRUUREQXBQY0dWdQpWbEJPSUVOQk1CNFhEVEl5TURJeU5URXpNall6TTFvWERUTXlNRE13TVRFek1qWXpNMW93RGpFTU1Bb0dBMVVFCkF3d0RiM1p2TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUExam02MjdadW1QQ0MKT2t2cjQrWGlCMTVra1Z4YmNNdFk0NWl4bmxXc01QZkZRdmlsQkRtaU9JcUcrS2t1N0VMTWtDdTRTU0c3VkZNbApBZmNnMEFia2h2STF1UUxzSlNoNDlsTXluamRTSTk0K1BuQUVVcldMZk9LcW4xaGlzZ0I1UDR0TGVIeVF4T3B0Ck1XaDRmQm9mWHN0enZLZHBIbnB6Y1FrRkp1NGIweUlqbllkUkZwa3JrekFwc1VjdnBjYUc2OGFxS2lSK1hiOXYKTnhVdTg4LytSY3owbThsN09KOG5DbjhqTFNVOVBtZm03aExWekNxRmlpL2J3Y2YxU250NXo5SzNtUmJ2dXpjNgpLeHl1TnBDZncxZ0svWllrSzBPS2kwUGlHOFZOd3dZYmdkV2swUURhNi9zeUxLMCtNZWpZYWpUY1k5M1YxUGlGCmY3Wm8raGYzNXdJREFRQUJveUF3SGpBSkJnTlZIUk1FQWpBQU1CRUdDV0NHU0FHRytFSUJBUVFFQXdJSGdEQU4KQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBVVdjNTh4eUFGeWFXYm9DK2JkbUIyZlZKRnhKdFpLSnBXWCtJNlhQYgpQT2NndnNrVUIyMkk1Zi9RZXFBNncxWGRXTU1vUE5aVnBXcjlnM05UT1VvQmFidWhHai9xakNJYXFWUjR5N0RJCmhSWldwZmNPaW1yR0FUeDlobWN3VFFUdkw2L3pGdDV1VTAreVJFaC9LcUFkckN0YUIyLzQyV3QyN0krQktqL24KM3dTZEFvbFdZVG1aYnM1em5CTmwxdDZlUXFYbi9COVNqUWdZWmw2Tld0NkhBdEdFQjNicWZLWFNidGM2NmhTYwp1Qm4wa2trTW9yeDBsWDdZaWYrb1JpOXRoU3psSytxdVQ4R0x3eEZEcDA0ZmkwemhZNFl1bkZIMFlaUFAvTWZ6ClNOS1l2anFJUVE1d1E5RWQ0ekpIYTF2cTN6SDRtVU1ZZ2RkaDVPMHJXQ0MveGc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCjwvY2VydD4KCjxrZXk+Ci0tLS0tQkVHSU4gUFJJVkFURSBLRVktLS0tLQpNSUlFdmdJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLZ3dnZ1NrQWdFQUFvSUJBUURXT2JyYnRtNlk4SUk2ClMrdmo1ZUlIWG1TUlhGdHd5MWpqbUxHZVZhd3c5OFZDK0tVRU9hSTRpb2I0cVM3c1FzeVFLN2hKSWJ0VVV5VUIKOXlEUUJ1U0c4alc1QXV3bEtIajJVektlTjFJajNqNCtjQVJTdFl0ODRxcWZXR0t5QUhrL2kwdDRmSkRFNm0weAphSGg4R2g5ZXkzTzhwMmtlZW5OeENRVW03aHZUSWlPZGgxRVdtU3VUTUNteFJ5K2x4b2JyeHFvcUpINWR2MjgzCkZTN3p6LzVGelBTYnlYczRueWNLZnlNdEpUMCtaK2J1RXRYTUtvV0tMOXZCeC9WS2UzblAwcmVaRnUrN056b3IKSEs0MmtKL0RXQXI5bGlRclE0cUxRK0lieFUzREJodUIxYVRSQU5ycit6SXNyVDR4Nk5ocU5OeGozZFhVK0lWLwp0bWo2Ri9mbkFnTUJBQUVDZ2dFQkFNN2RQbUJ1SVF4VXF4eUtOY2FETlNteWIrQ2lVN1p1MW00cEE5T0duVmxICjJWZWJiUlhRWmFLOXVpb2lqU29lTXhWQThwckVGUFlQdDl2Vy9QdUV2R2JIT3pObDdBelJzVVVFQUF3aUZaS0gKU0luWWQ0UTZ4UENhblBKMFVoSGJQVG9zVTN1TXBldFJDSkkrZEtJNlEzS3hlaGlCZkpPdTRRMFZEY0dUQ3BGcwpVSkRmN09FT0tsZXUvNHdWbDNyTzUyWnEzY2tHdGZxODg1TEJoSTRDaUpaWklZMjJXSTN2WG9ZdWFJdEllOVozCnJjSG1FbkkwaWhtdk9ldVQyK3Z1SHhrbk1tVjY4VkFsWDBPVDBoN1FmSFA0QlJDelcyNHJ1MFpjc1htQnhlUnkKcUFXZnI5eDBSRWxtRGJFdlVmRXIybDBjZU41SHBwUDhIYmMrMlBsTXdSRUNnWUVBOEk2ZDdwdlFOUWx3NjhNQQpLNk1SdzhZNW5KRVBIL1c2Ym5JWldaR2RoM2l3TGFSY3JJUS92VkhPeGJ3cnFHKzdIdkRlaDFiWmovYXpTTkptCnU2MUpoVTA4MUhVRE9OZnpjYnViUkcyckRBSm1tRHhDUUJmRFZGOVNPUXd0WnMxcys2MkQwNDRUVmMwT3FIblUKK3VGVmRrOWpNNDAyRzFvbStrRmp4SDAxZHBrQ2dZRUE0L3BmU25pem1VanM3V2t2bTU5dGJLclJteTRlVlRqUAorejJwNEczS1VHcTM0ZVpvUlk0a1U3aXhlRytsNHNFYis0NExDa0pkK3NIUnBWMmk3ZGt6aTNXYWNKOXlKNEJpCnAzbTlVTTZpYS8zY29hNDRkYjdXblhna3RoMHJCQ0RiK0IvcTFrWGFHcWdmbG4wUlpJY2dQeTNBU3lrekJHSUMKdHVYUHpjOFNjbjhDZ1lFQWpJTXh1ek9tWGFTRElpT0lVUFR5cG9GK0czY2I5NVlvYk9VVzY1dkVBV0s4dmh4WQp5YWlDTnNxM1ZnY0JGV1VXVHc5eFhHcWRzSnJ3eEdPcUFJeEsrcU5RR2VXem1SdURKdmJuemdPbE91R1lIZXBzCjVGVTlFbWFQZDZVbVMvdElZb1pMRDJMWTVuQmQxSWs5bjhISmtzN3lhaVZjNm9NeGExS1F2VEJKNzFrQ2dZQlUKOHFJM09hcVNYMTRKU0x4NG5IdEZscERyNWM5ZnFmKzFlbENtVThLakhHRFFSKzVxbklCa3dkay9LenNBdHp3YQpDOStKUHhtTnFsTFg3NEFhYUdpUWVvM0ZrV1FUMi83bXNMSWVQaUMvWktTbGlpbDNsbGlaN0g2aGJWVHVBT0IyCklFNTg4U0pIOUlWd3FjR2xWOFJvUmovMHdiRkUzTkJ1SGt2RVFIaDdPUUtCZ0hmWDJaZHNCU3Vpc2ZERlVPQXkKaVlnSXRtUGNLVDBsbHlQWll1Ym53Qyt1NFhZMXJzM1AySmFWb2JSbDNJSzMySmpJa2svbTFUV1AvbXJEc1pyYgo4dCtnTFNjeUVpZFFuUEpNT21icnNQejJmV2FmWUFiSDNNTGEwVWl1NklHM0xZUHd0MVlhRUVEZEFNQjIzQTU3CjJUYjJVa3UyL21ESXRaMEM1c1gwMGZqWAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCjwva2V5PgoKa2V5LWRpcmVjdGlvbiAxCjx0bHMtYXV0aD4KIwojIDIwNDggYml0IE9wZW5WUE4gc3RhdGljIGtleSAoU2VydmVyIEFnZW50KQojCi0tLS0tQkVHSU4gT3BlblZQTiBTdGF0aWMga2V5IFYxLS0tLS0KNjAzMDhkMmFiMzRmYjE1ZDczYWE2MzNhNzY1N2I5OTIKYjJmOTEzMDU4YTA5MjBkOGRhYWE0YjNiNTU1NmZjOTUKNzhkMjRlMTk2ZGM5NWUwNmUwMmU3MzQ1YmQwZDRkOWQKYjk0ZmFjY2VjODBhYTU4ODk4OTNkNTY3NDg2ODZkMWEKYTAzMWQ5N2Y1OWQwOTZkNDUxOTNlM2RmMzkzODUxYjYKMjU0OWYzZmI2YTNhYTBmOTg0Y2Y2ZjA5NjM0NzliNWEKYzEzNDNjYmQ4ZTI4NGJjMDNiOTdjYTBjM2U2YzM0YzYKYTBlZjJmMmRlODdlODYxNTMwZTlhZmJhYWUwZDQyYTgKYmQ0YWU5NTU2YjNlOTA1MmJmN2Y4NGRmMWIwZGNiYTAKZDg3YmM4Y2NjYjVlZTk4MDJjOTU0ZGYwYTk5MjNhNGQKMzc4ZTdlNzMwYTlhZjcxNDE4MzYyN2U3ZDA4OGU1YTAKMjVhZTE0MjMzNmRjYjA4MWRiODIxYzY0ZmIzMTAwOTAKYWJhMGFiZjJjYThkZWE1M2UzMDYyMzVjYWE3MjA0ZWQKOTM2NDllYzYxOWI0ZjNhMzQxZGQzZDhlMzM1MDdiM2EKOWZhOWU3ZjM4N2E1ZTYwNWE0YWJjOGY5NzljYzk3OWUKMGU5MzdlOGFkNjBlNjhjMmE3NjE4NWIyYWY3M2QzNTQKLS0tLS1FTkQgT3BlblZQTiBTdGF0aWMga2V5IFYxLS0tLS0KPC90bHMtYXV0aD4KCiMjIC0tLS0tQkVHSU4gUlNBIFNJR05BVFVSRS0tLS0tCiMjIERJR0VTVDpzaGEyNTYKIyMgb2s1bndhSHJYb2RBTlJjekNJME93MW1QQWJGak5QNEkvRFJwT2FTaEhTMzNZT04yV2EKIyMgUHJTMmpDK3B2cmMxdjdEcXFBbmRoNGZKdjkvNHBONUVPNFpSRnpZOEJyT24yQ2xCVU8KIyMgUGVQRXllcldkQmFCTVdsaTFLeE5YaXZ0YTBBTEgzVlpoY3hRT2VYMk16Qk1BUlN5Z2oKIyMgWmVSVFJzRGt5M2R5TzNQdTEvSGVWaUVITllubmp0QXlSeGd1NU00MmFLMytlZlpwU20KIyMgU1FyQ3pVUFVMU3ZKbzBWd3p1Nm1UMUpkV1d5UmNYWDVjMFBRc05vZTA1OHpVNzgvaWQKIyMgb01pM3I1VnZWWFJJN2JOclJ6S2xHdERKc2M3dGpxbDB5amhtNHM1dVJsQzJPaE8xeHoKIyMgV3JYck0rTG40dWZQelN5enQ4SUkvMit0enloelloTld1QnVaRWFTVzVnPT0KIyMgLS0tLS1FTkQgUlNBIFNJR05BVFVSRS0tLS0tCiMjIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQojIyBNSUlESFRDQ0FnV2dBd0lCQWdJRVlpSUZQekFOQmdrcWhraUc5dzBCQVFzRkFEQkhNVVV3UXdZRFZRUURERHhQCiMjIGNHVnVWbEJPSUZkbFlpQkRRU0F5TURJeUxqQXpMakEwSURFeU9qSTFPak0wSUZWVVF5QnBjQzB4TnpJdE1qWXQKIyMgTVMweU1qWXVZMkV0WTJVd0hoY05Nakl3TWpJMU1USXlOVE0wV2hjTk16SXdNekF4TVRJeU5UTTBXakE0TVRZdwojIyBOQVlEVlFRRERDMXBjQzB4TnpJdE1qWXRNUzB5TWpZdVkyRXRZMlZ1ZEhKaGJDMHhMbU52YlhCMWRHVXVhVzUwCiMjIFpYSnVZV3d3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRRENvY2VkTHdXR25WUVIKIyMgOHZ5MDNkQzduclZNUllLeDRyQ1NmaDNVTFpMeHVVYW1kdHg0bkVndFdILzRZSjFTY1hDTXcweUgrUlFWVVVGQQojIyBjU3hvYlo1YzZEeGpqREp2SmJqSDg2cmYwNGJ4T093bzJOcVdCQnc3NmZYM3hkNjlhbGlzRkJKNnlrMjhsTS9uCiMjIGlOZEpYd0VWb1VXR1RRV2wzYmJDUDRuNWNhNWF0TFpRaWk1ZDN1OEIySzJyaGpnUGk5K2UwMEQrNEFKUU1sMVIKIyMgT2UwTUNMYW5CSkZnTTRkTXh2bWJSKzBuaWNlVFRST3lnMlo0Uy9SOEx4N1J4eXdrWkdMRzhrV0lOUnRhdlVOSQojIyA4c2lXR3NFWEpxYm9UUlBsYnJ0NHNzaUN3MjduS0Nwd0NRVE84bE5MZ2c0MTMxbkZrSnFvSU04ZjN4Rk4veWluCiMjIE82WThRS2d0QWdNQkFBR2pJREFlTUFrR0ExVWRFd1FDTUFBd0VRWUpZSVpJQVliNFFnRUJCQVFEQWdaQU1BMEcKIyMgQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNFNmtyWTdDRmdFZDRiWEx0WE1FZVRIZGs2a2pPdEN5YmFUM1NlKzRMWgojIyBaMEd3cWJzaEtmNXpxZC9wSWpmQXQxV1lnOHc1WEs1N2hKWmIzQ1lydyt6QkN0LyswdHMzbU0rOFdneE4zSnNzCiMjIFVRODNDUHVWWUJ0T2NCWUthNVF6NzRSQ29TbThvRGlIS1orNEhMQk1rUlAwNkRJbG9DNDNqbFh4dWlvTlhGajgKIyMgVFViYW9ZbFl4MzE0ZXBWcTYzQ1Y3V2pyc0FoSFpoYVRxb3pFSFR5cGtRV0tNY1VqNExtM2k3Y2FVVW5DMTRwVQojIyB5RGplQVo2eG5uYTgyL1NOLzlNTlI0dkNHUms5azFuT3c1cE1nUzdTblNIVzJXN05Bb21qL3lUYXBDM1d4SnNECiMjIGh1aXk1SUg3NG1SK2x5L3BIbGN6N3lRT1VjdXE5STVIZnZUUFhHemI3RytMCiMjIC0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KIyMgLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCiMjIE1JSURIRENDQWdTZ0F3SUJBZ0lFWWlJRlBqQU5CZ2txaGtpRzl3MEJBUXNGQURCSE1VVXdRd1lEVlFRREREeFAKIyMgY0dWdVZsQk9JRmRsWWlCRFFTQXlNREl5TGpBekxqQTBJREV5T2pJMU9qTTBJRlZVUXlCcGNDMHhOekl0TWpZdAojIyBNUzB5TWpZdVkyRXRZMlV3SGhjTk1qSXdNakkxTVRJeU5UTTBXaGNOTXpJd016QXhNVEl5TlRNMFdqQkhNVVV3CiMjIFF3WURWUVFERER4UGNHVnVWbEJPSUZkbFlpQkRRU0F5TURJeUxqQXpMakEwSURFeU9qSTFPak0wSUZWVVF5QnAKIyMgY0MweE56SXRNall0TVMweU1qWXVZMkV0WTJVd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFSwojIyBBb0lCQVFEQ3N0Q2JDZzhwY3ZLeG9oOE5LOXl3WWQ2S1ozNUxzTnU3c2FhSzhzNWtaYnl0MXVDL0JtSDJXUTlCCiMjIEVrdmF5eUxMWWx0YWlPTlBSM08xckZnczEyb2lXUHplSzZBL0Z2aVRDWlhOa2QwWU9DSk9jZW1XTi9GUXFuSUkKIyMgREVLZGdWUm41SmNneERwSzBuRTlxSXpMSldaQkloSFBXeXVvdHZBRGtaRTVScTJJVWtlWm4yOHd0NlhpMS9XOQojIyA3dHNHS01iUC81ZUNPTFR6Qm1uU3dOWHlqaEs1OUZvNm5PQ2MxOFBFTFpFNE9WcjlvRXlKYXdkdm9XUEFTZDZ3CiMjIEZ5Z3N4emtkZjVrTDVFcnc0bEwxc01tSmR0RDJlQUlyZWpyNVZRYnptUGlWaS9nSlkwTE9tOHZaVVFHL3JuS0cKIyMgNEVVdk0rSitzRFYwOFUzUFViWVFMNUI2WkhjTkFnTUJBQUdqRURBT01Bd0dBMVVkRXdRRk1BTUJBZjh3RFFZSgojIyBLb1pJaHZjTkFRRUxCUUFEZ2dFQkFFc0hwd2pzeVJ1U3dKOHl1TUgwNXhsNjVMbU02cjJ6ZTRKdWo0enhib0pLCiMjIENidWppRm1hWUxKaXFyY2c3dEx6MFhrUGN1Q1RpYlZ0eFFiS1hyWklOK0lXSmtOanhpdXFzdFBSZmFuLy9mY3IKIyMgenNnM0RoazF1ZFlLYXZvb2NGQkd2N0dOYy8zMDJqL2gwa080clBDWHVnM0Y1aTJnLzhjU2k2S1M1WTdzWTJJZAojIyBiYjZZdVVoWndlbk56bGdVZ2lPN05mSkl6VHpSQU1kTlU3bXlOc0J3Z0hIT2VRcTlvSkxwL00wa1ZOZ0h4TnlZCiMjIFpYaXU5a3hjbHRBeStVVU1xNDZkYkdNVXF3VFk2R2xab3MvTk1vcHgzMW1WZjdoN1Y2TnlWRTVmV2pRbmM2VWIKIyMgTzBmeUtNaUNnaWxZOEJ0WFpXa1lSMSsyVW82ZEluQkkyUmlhdWFXbHRaND0KIyMgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+                //   "username":"ovo",
+                //   "password":"12345"
                 // }).then((value) {
                 //   print(value.id);
                 // });
@@ -80,182 +84,230 @@ class _HomeUIState extends State<HomeUI> {
       ),
       body: Column(children: [
         //
-        Card(
-          child: SizedBox(
-            height: 160,
-            child: Stack(
-              children: [
-                //
-                Positioned(
-                  left: 20,
-                  top: 5,
-                  bottom: 5,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+        GetBuilder<VpnController>(
+            init: VpnController(),
+            builder: (controller) {
+              return Card(
+                child: SizedBox(
+                  height: 160,
+                  child: Stack(
                     children: [
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(5.0),
-                        height: 80,
-                        child: Image.asset(
-                          (stage.toString() == VPNStage.connected.toString())
-                              ? "assets/icon/vpn.png"
-                              : "assets/icon/vpn_off.png",
-                        ),
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.north_sharp,
-                                size: 15,
-                              ),
-                              Text(
-                                  "Up     : ${status!.byteOut.toString()} bytes"),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 3,
-                          ),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.south_sharp,
-                                size: 15,
-                              ),
-                              Text("Down: ${status!.byteIn.toString()} bytes"),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                Positioned(
-                  right: 20,
-                  top: 10,
-                  bottom: 5,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 5),
+                      //
+                      Positioned(
+                        left: 20,
+                        top: 5,
+                        bottom: 5,
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset("assets/flag/US.png", height: 35),
                             const SizedBox(
-                              height: 10,
+                              height: 15,
                             ),
-                            Text(
+                            Container(
+                              padding: const EdgeInsets.all(5.0),
+                              height: 80,
+                              child: Image.asset(
                                 (stage.toString() ==
-                                            VPNStage.disconnected.toString() ||
-                                        stage.toString() == "null")
-                                    ? "Disconnected"
-                                    : stage!.name.toString(),
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red)),
-                            // color: (stage?.toString() == VPNStage.disconnected.toString())
-                            //     ? Colors.red
-                            //     : Colors.green)),
+                                        VPNStage.connected.toString())
+                                    ? "assets/icon/vpn.png"
+                                    : "assets/icon/vpn_off.png",
+                              ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.north_sharp,
+                                      size: 15,
+                                    ),
+                                    Text(
+                                        "Up     : ${status!.byteOut.toString()} bytes"),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.south_sharp,
+                                      size: 15,
+                                    ),
+                                    Text(
+                                        "Down: ${status!.byteIn.toString()} bytes"),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                              ],
+                            )
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            if (_granted == null) {
-                              engine.requestPermissionAndroid().then((value) {
-                                setState(() {
-                                  _granted = value;
-                                });
-                              });
-                            }
-                            if (stage.toString() ==
-                                VPNStage.connected.toString()) {
-                              engine.disconnect();
-                            } else {
-                              initPlatformState();
-                            }
-                          },
-                          child: Container(
-                            height: 38,
-                            width: 140,
-                            padding: const EdgeInsets.all(5),
-                            margin: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: (stage.toString() ==
-                                          VPNStage.disconnected.toString() ||
-                                      stage.toString() == "null")
-                                  ? Colors.grey.shade400
-                                  : Colors.green.shade400,
+                      Positioned(
+                        right: 20,
+                        top: 10,
+                        bottom: 5,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            controller.haveVpn
+                                ? Column(
+                                    children: [
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 10, right: 5),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Image.asset(
+                                                "assets/flag/${controller.vpn!.cod ?? "US"}.png",
+                                                height: 35),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            Text(
+                                                (stage.toString() ==
+                                                            VPNStage
+                                                                .disconnected
+                                                                .toString() ||
+                                                        stage.toString() ==
+                                                            "null")
+                                                    ? "Disconnected"
+                                                    : stage!.name.toString(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.red)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+                            const SizedBox(
+                              height: 12,
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  (stage.toString() ==
-                                              VPNStage.disconnected
-                                                  .toString() ||
-                                          stage.toString() == "null")
-                                      ? "Connect Now"
-                                      : stage!.name.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500),
+                            Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (controller.haveVpn == true) {
+                                    if (_granted == null) {
+                                      engine
+                                          .requestPermissionAndroid()
+                                          .then((value) {
+                                        setState(() {
+                                          _granted = value;
+                                        });
+                                      });
+                                    }
+                                    if (stage.toString() ==
+                                        VPNStage.connected.toString()) {
+                                      engine.disconnect();
+                                    } else {
+                                      initPlatformState(vpn: controller.vpn!);
+                                    }
+                                  } else {
+                                    Get.toNamed(VPNRoute.serverlist);
+                                  }
+                                },
+                                child: Container(
+                                  height: 38,
+                                  width: 140,
+                                  padding: const EdgeInsets.all(5),
+                                  margin: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: (stage.toString() ==
+                                                VPNStage.disconnected
+                                                    .toString() ||
+                                            stage.toString() == "null")
+                                        ? Colors.grey.shade400
+                                        : (stage.toString() ==
+                                                VPNStage.connected.toString())
+                                            ? Colors.green.shade400
+                                            : Colors.green.shade200,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        (stage.toString() ==
+                                                    VPNStage.disconnected
+                                                        .toString() ||
+                                                stage.toString() == "null")
+                                            ? "Connect Now"
+                                            : (stage.toString() ==
+                                                    VPNStage.connected
+                                                        .toString())
+                                                ? "Connected"
+                                                : (stage.toString() ==
+                                                        VPNStage.wait_connection
+                                                            .toString())
+                                                    ? "Wating..."
+                                                    : (stage.toString() ==
+                                                            VPNStage
+                                                                .vpn_generate_config
+                                                                .toString())
+                                                        ? "Generate VPN"
+                                                        : "Wating...",
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Icon(
+                                        Icons.circle,
+                                        size: 10,
+                                        color: (stage.toString() ==
+                                                    VPNStage.disconnected
+                                                        .toString() ||
+                                                stage.toString() == "null")
+                                            ? Colors.grey.shade800
+                                            : (stage.toString() ==
+                                                    VPNStage.connected
+                                                        .toString())
+                                                ? Colors.green.shade800
+                                                : Colors.white,
+                                      )
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Icon(
-                                  Icons.circle,
-                                  size: 10,
-                                  color: (stage.toString() ==
-                                              VPNStage.disconnected
-                                                  .toString() ||
-                                          stage.toString() == "null")
-                                      ? Colors.grey.shade800
-                                      : Colors.green.shade800,
-                                )
-                              ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(
-                        height: 10,
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              );
+            }),
         GestureDetector(
           onTap: () {
-            Get.toNamed(VPNRoute.serverlist);
+            if (stage.toString() == VPNStage.connected.toString()) {
+              engine.disconnect();
+            } else {
+              Get.toNamed(VPNRoute.serverlist);
+            }
           },
           child: Card(
             child: SizedBox(
@@ -277,128 +329,7 @@ class _HomeUIState extends State<HomeUI> {
             ),
           ),
         ),
-        // if (Platform.isAndroid)
-        //   TextButton(
-        //     child: Text(_granted ? "Granted" : "Request Permission"),
-        //     onPressed: () {
-        //       engine.requestPermissionAndroid().then((value) {
-        //         setState(() {
-        //           _granted = value;
-        //         });
-        //       });
-        //     },
-        //   ),
       ]),
     );
   }
 }
-
-const String defaultVpnUsername = "";
-const String defaultVpnPassword = "";
-
-String config = """ 
-dev tun 
-proto tcp 
-remote public-vpn-173.opengw.net 443 
-;http-proxy-retry
-;http-proxy [proxy server] [proxy port] 
-cipher AES-128-CBC
-auth SHA1 
-resolv-retry infinite
-nobind
-persist-key
-persist-tun
-client
-verb 3 
-<ca>
------BEGIN CERTIFICATE-----
-MIIF3jCCA8agAwIBAgIQAf1tMPyjylGoG7xkDjUDLTANBgkqhkiG9w0BAQwFADCB
-iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl
-cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV
-BAMTJVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTAw
-MjAxMDAwMDAwWhcNMzgwMTE4MjM1OTU5WjCBiDELMAkGA1UEBhMCVVMxEzARBgNV
-BAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0plcnNleSBDaXR5MR4wHAYDVQQKExVU
-aGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNVBAMTJVVTRVJUcnVzdCBSU0EgQ2Vy
-dGlmaWNhdGlvbiBBdXRob3JpdHkwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIK
-AoICAQCAEmUXNg7D2wiz0KxXDXbtzSfTTK1Qg2HiqiBNCS1kCdzOiZ/MPans9s/B
-3PHTsdZ7NygRK0faOca8Ohm0X6a9fZ2jY0K2dvKpOyuR+OJv0OwWIJAJPuLodMkY
-tJHUYmTbf6MG8YgYapAiPLz+E/CHFHv25B+O1ORRxhFnRghRy4YUVD+8M/5+bJz/
-Fp0YvVGONaanZshyZ9shZrHUm3gDwFA66Mzw3LyeTP6vBZY1H1dat//O+T23LLb2
-VN3I5xI6Ta5MirdcmrS3ID3KfyI0rn47aGYBROcBTkZTmzNg95S+UzeQc0PzMsNT
-79uq/nROacdrjGCT3sTHDN/hMq7MkztReJVni+49Vv4M0GkPGw/zJSZrM233bkf6
-c0Plfg6lZrEpfDKEY1WJxA3Bk1QwGROs0303p+tdOmw1XNtB1xLaqUkL39iAigmT
-Yo61Zs8liM2EuLE/pDkP2QKe6xJMlXzzawWpXhaDzLhn4ugTncxbgtNMs+1b/97l
-c6wjOy0AvzVVdAlJ2ElYGn+SNuZRkg7zJn0cTRe8yexDJtC/QV9AqURE9JnnV4ee
-UB9XVKg+/XRjL7FQZQnmWEIuQxpMtPAlR1n6BB6T1CZGSlCBst6+eLf8ZxXhyVeE
-Hg9j1uliutZfVS7qXMYoCAQlObgOK6nyTJccBz8NUvXt7y+CDwIDAQABo0IwQDAd
-BgNVHQ4EFgQUU3m/WqorSs9UgOHYm8Cd8rIDZsswDgYDVR0PAQH/BAQDAgEGMA8G
-A1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQEMBQADggIBAFzUfA3P9wF9QZllDHPF
-Up/L+M+ZBn8b2kMVn54CVVeWFPFSPCeHlCjtHzoBN6J2/FNQwISbxmtOuowhT6KO
-VWKR82kV2LyI48SqC/3vqOlLVSoGIG1VeCkZ7l8wXEskEVX/JJpuXior7gtNn3/3
-ATiUFJVDBwn7YKnuHKsSjKCaXqeYalltiz8I+8jRRa8YFWSQEg9zKC7F4iRO/Fjs
-8PRF/iKz6y+O0tlFYQXBl2+odnKPi4w2r78NBc5xjeambx9spnFixdjQg3IM8WcR
-iQycE0xyNN+81XHfqnHd4blsjDwSXWXavVcStkNr/+XeTWYRUc+ZruwXtuhxkYze
-Sf7dNXGiFSeUHM9h4ya7b6NnJSFd5t0dCy5oGzuCr+yDZ4XUmFF0sbmZgIn/f3gZ
-XHlKYC6SQK5MNyosycdiyA5d9zZbyuAlJQG03RoHnHcAP9Dc1ew91Pq7P8yF1m9/
-qS3fuQL39ZeatTXaw2ewh0qpKJ4jjv9cJ2vhsE/zB+4ALtRZh8tSQZXq9EfX7mRB
-VXyNWQKV3WKdwrnuWih0hKWbt5DHDAff9Yk2dDLWKMGwsAvgnEzDHNb842m1R0aB
-L6KCq9NjRHDEjf8tM7qtj3u1cIiuPhnPQCjY/MiQu12ZIvVS5ljFH4gxQ+6IHdfG
-jjxDah2nGN59PRbxYvnKkKj9
------END CERTIFICATE-----
-
-</ca>
- 
-<cert>
------BEGIN CERTIFICATE-----
-MIICxjCCAa4CAQAwDQYJKoZIhvcNAQEFBQAwKTEaMBgGA1UEAxMRVlBOR2F0ZUNs
-aWVudENlcnQxCzAJBgNVBAYTAkpQMB4XDTEzMDIxMTAzNDk0OVoXDTM3MDExOTAz
-MTQwN1owKTEaMBgGA1UEAxMRVlBOR2F0ZUNsaWVudENlcnQxCzAJBgNVBAYTAkpQ
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5h2lgQQYUjwoKYJbzVZA
-5VcIGd5otPc/qZRMt0KItCFA0s9RwReNVa9fDRFLRBhcITOlv3FBcW3E8h1Us7RD
-4W8GmJe8zapJnLsD39OSMRCzZJnczW4OCH1PZRZWKqDtjlNca9AF8a65jTmlDxCQ
-CjntLIWk5OLLVkFt9/tScc1GDtci55ofhaNAYMPiH7V8+1g66pGHXAoWK6AQVH67
-XCKJnGB5nlQ+HsMYPV/O49Ld91ZN/2tHkcaLLyNtywxVPRSsRh480jju0fcCsv6h
-p/0yXnTB//mWutBGpdUlIbwiITbAmrsbYnjigRvnPqX1RNJUbi9Fp6C2c/HIFJGD
-ywIDAQABMA0GCSqGSIb3DQEBBQUAA4IBAQChO5hgcw/4oWfoEFLu9kBa1B//kxH8
-hQkChVNn8BRC7Y0URQitPl3DKEed9URBDdg2KOAz77bb6ENPiliD+a38UJHIRMqe
-UBHhllOHIzvDhHFbaovALBQceeBzdkQxsKQESKmQmR832950UCovoyRB61UyAV7h
-+mZhYPGRKXKSJI6s0Egg/Cri+Cwk4bjJfrb5hVse11yh4D9MHhwSfCOH+0z4hPUT
-Fku7dGavURO5SVxMn/sL6En5D+oSeXkadHpDs+Airym2YHh15h0+jPSOoR6yiVp/
-6zZeZkrN43kuS73KpKDFjfFPh8t4r1gOIjttkNcQqBccusnplQ7HJpsk
------END CERTIFICATE-----
-
-</cert>
-
-<key>
------BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEA5h2lgQQYUjwoKYJbzVZA5VcIGd5otPc/qZRMt0KItCFA0s9R
-wReNVa9fDRFLRBhcITOlv3FBcW3E8h1Us7RD4W8GmJe8zapJnLsD39OSMRCzZJnc
-zW4OCH1PZRZWKqDtjlNca9AF8a65jTmlDxCQCjntLIWk5OLLVkFt9/tScc1GDtci
-55ofhaNAYMPiH7V8+1g66pGHXAoWK6AQVH67XCKJnGB5nlQ+HsMYPV/O49Ld91ZN
-/2tHkcaLLyNtywxVPRSsRh480jju0fcCsv6hp/0yXnTB//mWutBGpdUlIbwiITbA
-mrsbYnjigRvnPqX1RNJUbi9Fp6C2c/HIFJGDywIDAQABAoIBAERV7X5AvxA8uRiK
-k8SIpsD0dX1pJOMIwakUVyvc4EfN0DhKRNb4rYoSiEGTLyzLpyBc/A28Dlkm5eOY
-fjzXfYkGtYi/Ftxkg3O9vcrMQ4+6i+uGHaIL2rL+s4MrfO8v1xv6+Wky33EEGCou
-QiwVGRFQXnRoQ62NBCFbUNLhmXwdj1akZzLU4p5R4zA3QhdxwEIatVLt0+7owLQ3
-lP8sfXhppPOXjTqMD4QkYwzPAa8/zF7acn4kryrUP7Q6PAfd0zEVqNy9ZCZ9ffho
-zXedFj486IFoc5gnTp2N6jsnVj4LCGIhlVHlYGozKKFqJcQVGsHCqq1oz2zjW6LS
-oRYIHgECgYEA8zZrkCwNYSXJuODJ3m/hOLVxcxgJuwXoiErWd0E42vPanjjVMhnt
-KY5l8qGMJ6FhK9LYx2qCrf/E0XtUAZ2wVq3ORTyGnsMWre9tLYs55X+ZN10Tc75z
-4hacbU0hqKN1HiDmsMRY3/2NaZHoy7MKnwJJBaG48l9CCTlVwMHocIECgYEA8jby
-dGjxTH+6XHWNizb5SRbZxAnyEeJeRwTMh0gGzwGPpH/sZYGzyu0SySXWCnZh3Rgq
-5uLlNxtrXrljZlyi2nQdQgsq2YrWUs0+zgU+22uQsZpSAftmhVrtvet6MjVjbByY
-DADciEVUdJYIXk+qnFUJyeroLIkTj7WYKZ6RjksCgYBoCFIwRDeg42oK89RFmnOr
-LymNAq4+2oMhsWlVb4ejWIWeAk9nc+GXUfrXszRhS01mUnU5r5ygUvRcarV/T3U7
-TnMZ+I7Y4DgWRIDd51znhxIBtYV5j/C/t85HjqOkH+8b6RTkbchaX3mau7fpUfds
-Fq0nhIq42fhEO8srfYYwgQKBgQCyhi1N/8taRwpk+3/IDEzQwjbfdzUkWWSDk9Xs
-H/pkuRHWfTMP3flWqEYgW/LW40peW2HDq5imdV8+AgZxe/XMbaji9Lgwf1RY005n
-KxaZQz7yqHupWlLGF68DPHxkZVVSagDnV/sztWX6SFsCqFVnxIXifXGC4cW5Nm9g
-va8q4QKBgQCEhLVeUfdwKvkZ94g/GFz731Z2hrdVhgMZaU/u6t0V95+YezPNCQZB
-wmE9Mmlbq1emDeROivjCfoGhR3kZXW1pTKlLh6ZMUQUOpptdXva8XxfoqQwa3enA
-M7muBbF0XN7VO80iJPv+PmIZdEIAkpwKfi201YB+BafCIuGxIF50Vg==
------END RSA PRIVATE KEY-----
-
-</key>
-
-
-""";
