@@ -1,10 +1,9 @@
-import 'dart:io';
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:openvpn_flutter/openvpn_flutter.dart';
 import 'package:vpn/Router/route.dart';
+import 'package:vpn/controller/update_controller.dart';
 import 'package:vpn/controller/vpn_controller.dart';
 import 'package:vpn/model/vpn.dart';
 
@@ -16,6 +15,9 @@ class HomeUI extends StatefulWidget {
 }
 
 class _HomeUIState extends State<HomeUI> {
+
+  UpdateController controller = Get.put(UpdateController()); 
+
   late OpenVPN engine;
   VpnStatus? status;
   VPNStage? stage;
