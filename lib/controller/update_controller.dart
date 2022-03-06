@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:get/get.dart';
 import 'package:package_info/package_info.dart';
@@ -22,11 +21,15 @@ class UpdateController extends GetxController {
   }
 
   initRemoteConfig() async {
-    await _remoteConfig.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: const Duration(seconds: 10),
-      minimumFetchInterval: const Duration(hours: 1),
-    ));
-    checkRemoteVersion();
+    try {
+      await _remoteConfig.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: const Duration(hours: 1),
+      ));
+      checkRemoteVersion();
+    } catch (e) {
+      print(e);
+    }
   }
 
   checkRemoteVersion() async {

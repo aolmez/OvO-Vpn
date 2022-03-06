@@ -15,8 +15,8 @@ class HomeUI extends StatefulWidget {
 }
 
 class _HomeUIState extends State<HomeUI> {
-
-  UpdateController controller = Get.put(UpdateController()); 
+  UpdateController controller = Get.put(UpdateController());
+  
 
   late OpenVPN engine;
   VpnStatus? status;
@@ -43,6 +43,7 @@ class _HomeUIState extends State<HomeUI> {
             "id.laskarmedia.openvpnFlutterExample.VPNExtension",
         localizedDescription: "VPN by OvO God");
     super.initState();
+    controller.initRemoteConfig();
   }
 
   Future<void> initPlatformState({required Vpn vpn}) async {
@@ -58,8 +59,8 @@ class _HomeUIState extends State<HomeUI> {
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
+          children: const [
+            Text(
               'OvO VPN',
               style: TextStyle(color: Colors.black),
             ),

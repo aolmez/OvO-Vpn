@@ -34,7 +34,10 @@ class _VPNAppState extends State<VPNApp> {
       defaultTransition: Transition.fadeIn,
       getPages: VPNRouters.routes,
       initialRoute: VPNRoute.root,
-      theme: ThemeData(appBarTheme: appbarTheme, cardTheme: cardTheme),
+      theme: ThemeData(
+        appBarTheme: appbarTheme,
+        cardTheme: cardTheme,
+      ),
       navigatorObservers: [
         observer,
       ],
