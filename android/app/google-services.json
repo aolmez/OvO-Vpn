@@ -7,12 +7,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:783899615285:android:81dbe98c9ec49a6c83917c",
+        "mobilesdk_app_id": "1:783899615285:android:986359a3a834e5e983917c",
         "android_client_info": {
-          "package_name": "dev.ovo.vpn"
+          "package_name": "dev.ovogod.vpn"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "783899615285-jdjuv96r15u9orggka62c725f47h14hh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.ovogod.vpn",
+            "certificate_hash": "4df74e531188385cae0267b76e67ddaeaee684ca"
+          }
+        },
         {
           "client_id": "783899615285-edadakm1m32klumgkidcg6elc4d6va65.apps.googleusercontent.com",
           "client_type": 3

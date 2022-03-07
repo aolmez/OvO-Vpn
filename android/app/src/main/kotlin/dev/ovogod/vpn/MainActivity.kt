@@ -1,4 +1,4 @@
-package dev.ovo.vpn
+package dev.ovogod.vpn
 
 import android.content.Intent
 import id.laskarmedia.openvpn_flutter.OpenVPNFlutterPlugin
