@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:openvpn_flutter/openvpn_flutter.dart';
 
 class Test extends StatefulWidget {
-  Test({Key? key}) : super(key: key);
+ const Test({Key? key}) : super(key: key);
 
   @override
   State<Test> createState() => _TestState();

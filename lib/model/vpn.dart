@@ -2,6 +2,8 @@
 //
 //     final vpn = vpnFromJson(jsonString);
 
+// ignore_for_file: prefer_if_null_operators
+
 import 'dart:convert';
 
 List<Vpn> vpnFromJson(String str) =>

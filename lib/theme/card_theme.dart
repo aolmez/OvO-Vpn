@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
 
-CardTheme cardTheme = CardTheme(
+CardTheme cardTheme = const CardTheme(
   elevation: 0.3,
 );

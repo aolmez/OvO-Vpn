@@ -13,6 +13,7 @@ class SplashUI extends StatefulWidget {
 class _SplashUIState extends State<SplashUI> {
   @override
   void initState() {
+    // ignore: todo
     // TODO: implement initState
     Timer(const Duration(seconds: 2), () {
       // Get.toNamed(VPNRoute.home);

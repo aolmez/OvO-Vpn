@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:package_info/package_info.dart';
 import 'package:vpn/model/remote_update.dart';
@@ -28,7 +29,9 @@ class UpdateController extends GetxController {
       ));
       checkRemoteVersion();
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
