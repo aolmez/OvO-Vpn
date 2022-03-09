@@ -109,275 +109,274 @@ class _HomeUIState extends State<HomeUI> {
       body: Column(children: [
         //
         GetBuilder<VpnController>(
-            init: VpnController(),
-            builder: (controller) {
-              return Card(
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/icon/map.png'),
-                        opacity: 0.08,
-                        fit: BoxFit.fitHeight,
-                      ),
+          init: VpnController(),
+          builder: (controller) {
+            return Card(
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/icon/map.png'),
+                      opacity: 0.08,
+                      fit: BoxFit.fitHeight,
                     ),
-                    margin: const EdgeInsets.all(5),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 10,
-                          top: 10,
-                          child: Container(
-                            padding: const EdgeInsets.all(5.0),
-                            height: 80,
-                            child: Image.asset(
-                              (stage.toString() ==
-                                      VPNStage.connected.toString())
-                                  ? "assets/icon/vpn.png"
-                                  : "assets/icon/vpn_off.png",
+                  ),
+                  margin: const EdgeInsets.all(5),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 10,
+                        top: 10,
+                        child: Container(
+                          padding: const EdgeInsets.all(5.0),
+                          height: 80,
+                          child: Image.asset(
+                            (stage.toString() == VPNStage.connected.toString())
+                                ? "assets/icon/vpn.png"
+                                : "assets/icon/vpn_off.png",
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 10,
+                        bottom: 10,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.north_sharp,
+                                  size: 15,
+                                ),
+                                Text(
+                                  "Up      : ${status?.byteOut == "0" ? "0" : formatBytes(double.parse(status!.byteIn!))}",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.green,
+                                      fontSize: 15),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.south_sharp,
+                                  size: 15,
+                                ),
+                                Text(
+                                  "Down : ${status?.byteIn == "0" ? "0" : formatBytes(double.parse(status!.byteIn!))}",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.green,
+                                      fontSize: 15),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                          ],
                         ),
-                        Positioned(
-                          left: 10,
-                          bottom: 10,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.north_sharp,
-                                    size: 15,
-                                  ),
-                                  Text(
-                                    "Up      : ${status?.byteOut == "0" ? "0" : formatBytes(double.parse(status!.byteIn!))}",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.green,
-                                        fontSize: 15),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.south_sharp,
-                                    size: 15,
-                                  ),
-                                  Text(
-                                    "Down : ${status?.byteIn == "0" ? "0" : formatBytes(double.parse(status!.byteIn!))}",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.green,
-                                        fontSize: 15),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          right: 8,
-                          top: 10,
-                          bottom: 5,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              controller.haveVpn
-                                  ? Column(
-                                      children: [
-                                        const SizedBox(
-                                          height: 15,
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 10, right: 5),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Image.asset(
-                                                  "assets/flag/${controller.vpn!.cod ?? "US"}.png",
-                                                  height: 35),
-                                              const SizedBox(
-                                                height: 10,
-                                              ),
-                                              Text(
-                                                  (stage.toString() ==
-                                                              VPNStage
-                                                                  .disconnected
-                                                                  .toString() ||
-                                                          stage.toString() ==
-                                                              "null")
-                                                      ? "Disconnected"
-                                                      : stage!.name.toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.red)),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Container(),
-                              const SizedBox(
-                                height: 12,
-                              ),
-                              Center(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (controller.haveVpn == true) {
-                                      if (_granted == null) {
-                                        engine
-                                            .requestPermissionAndroid()
-                                            .then((value) {
-                                          setState(() {
-                                            _granted = value;
-                                          });
-                                        });
-                                      }
-                                      if (stage.toString() ==
-                                              VPNStage.disconnected
-                                                  .toString() ||
-                                          stage.toString() == "null") {
-                                        initPlatformState(vpn: controller.vpn!);
-                                      } else {
-                                        Get.defaultDialog(
-                                          titlePadding: const EdgeInsets.only(
-                                              top: 10, bottom: 10),
-                                          contentPadding: const EdgeInsets.only(
-                                              top: 10,
-                                              bottom: 10,
-                                              right: 15,
-                                              left: 15),
-                                          title: "Warning:",
-                                          middleText:
-                                              "The connection will be disconnected.",
-                                          middleTextStyle: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 16),
-                                          textConfirm: "Confirm",
-                                          textCancel: "Cancel",
-                                          radius: 8,
-                                          onConfirm: () {
-                                            engine.disconnect();
-                                            Get.back();
-                                          },
-                                          onCancel: () {
-                                            //
-                                            Get.back();
-                                          },
-                                          buttonColor: Colors.red,
-                                        );
-                                      }
-                                    } else {
-                                      Get.toNamed(VPNRoute.serverlist);
-                                    }
-                                  },
-                                  child: Container(
-                                    height: 45,
-                                    width: 150,
-                                    padding: const EdgeInsets.all(5),
-                                    margin: const EdgeInsets.all(5),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: (stage.toString() ==
-                                                  VPNStage.disconnected
-                                                      .toString() ||
-                                              stage.toString() == "null")
-                                          ? Colors.grey.shade400
-                                          : (stage.toString() ==
-                                                  VPNStage.connected.toString())
-                                              ? Colors.green.shade400
-                                              : Colors.green.shade200,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            (stage.toString() ==
-                                                        VPNStage.disconnected
-                                                            .toString() ||
-                                                    stage.toString() == "null")
-                                                ? "Connect Now"
-                                                : (stage.toString() ==
-                                                        VPNStage.connected
-                                                            .toString())
-                                                    ? "Connected"
-                                                    : (stage.toString() ==
+                      ),
+                      Positioned(
+                        right: 8,
+                        top: 10,
+                        bottom: 5,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            controller.haveVpn
+                                ? Column(
+                                    children: [
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 10, right: 5),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Image.asset(
+                                                "assets/flag/${controller.vpn!.cod ?? "US"}.png",
+                                                height: 35),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            Text(
+                                                (stage.toString() ==
                                                             VPNStage
-                                                                .wait_connection
-                                                                .toString())
-                                                        ? "Wating..."
-                                                        : (stage.toString() ==
-                                                                VPNStage
-                                                                    .vpn_generate_config
-                                                                    .toString())
-                                                            ? "Generate VPN"
-                                                            : "Wating...",
-                                            maxLines: 1,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500),
-                                          ),
+                                                                .disconnected
+                                                                .toString() ||
+                                                        stage.toString() ==
+                                                            "null")
+                                                    ? "Disconnected"
+                                                    : stage!.name.toString(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.red)),
+                                          ],
                                         ),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
-                                        Icon(
-                                          Icons.power_settings_new,
-                                          size: 23,
-                                          color: (stage.toString() ==
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+                            const SizedBox(
+                              height: 12,
+                            ),
+                            Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (controller.haveVpn == true) {
+                                    if (_granted == null) {
+                                      engine
+                                          .requestPermissionAndroid()
+                                          .then((value) {
+                                        setState(() {
+                                          _granted = value;
+                                        });
+                                      });
+                                    }
+                                    if (stage.toString() ==
+                                            VPNStage.disconnected.toString() ||
+                                        stage.toString() == "null") {
+                                      initPlatformState(vpn: controller.vpn!);
+                                    } else {
+                                      Get.defaultDialog(
+                                        titlePadding: const EdgeInsets.only(
+                                            top: 10, bottom: 10),
+                                        contentPadding: const EdgeInsets.only(
+                                            top: 10,
+                                            bottom: 10,
+                                            right: 15,
+                                            left: 15),
+                                        title: "Warning:",
+                                        middleText:
+                                            "The connection will be disconnected.",
+                                        middleTextStyle: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 16),
+                                        textConfirm: "Confirm",
+                                        textCancel: "Cancel",
+                                        radius: 8,
+                                        onConfirm: () {
+                                          engine.disconnect();
+                                          Get.back();
+                                        },
+                                        onCancel: () {
+                                          //
+                                          Get.back();
+                                        },
+                                        buttonColor: Colors.red,
+                                      );
+                                    }
+                                  } else {
+                                    Get.toNamed(VPNRoute.serverlist);
+                                  }
+                                },
+                                child: Container(
+                                  height: 45,
+                                  width: 150,
+                                  padding: const EdgeInsets.all(5),
+                                  margin: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: (stage.toString() ==
+                                                VPNStage.disconnected
+                                                    .toString() ||
+                                            stage.toString() == "null")
+                                        ? Colors.grey.shade400
+                                        : (stage.toString() ==
+                                                VPNStage.connected.toString())
+                                            ? Colors.green.shade400
+                                            : Colors.green.shade200,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          (stage.toString() ==
                                                       VPNStage.disconnected
                                                           .toString() ||
                                                   stage.toString() == "null")
-                                              ? Colors.grey.shade800
+                                              ? "Connect Now"
                                               : (stage.toString() ==
                                                       VPNStage.connected
                                                           .toString())
-                                                  ? Colors.green.shade800
-                                                  : Colors.white,
+                                                  ? "Connected"
+                                                  : (stage.toString() ==
+                                                          VPNStage
+                                                              .wait_connection
+                                                              .toString())
+                                                      ? "Wating..."
+                                                      : (stage.toString() ==
+                                                              VPNStage
+                                                                  .vpn_generate_config
+                                                                  .toString())
+                                                          ? "Generate VPN"
+                                                          : "Wating...",
+                                          maxLines: 1,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500),
                                         ),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      Icon(
+                                        Icons.power_settings_new,
+                                        size: 23,
+                                        color: (stage.toString() ==
+                                                    VPNStage.disconnected
+                                                        .toString() ||
+                                                stage.toString() == "null")
+                                            ? Colors.grey.shade800
+                                            : (stage.toString() ==
+                                                    VPNStage.connected
+                                                        .toString())
+                                                ? Colors.green.shade800
+                                                : Colors.white,
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            }),
-        GestureDetector(
+              ),
+            );
+          },
+        ),
+        _pickServer(
+          icon: Icons.location_on,
+          text: "Pick Your Server",
           onTap: () {
             if (stage.toString() == VPNStage.disconnected.toString() ||
                 stage.toString() == "null") {
@@ -406,39 +405,90 @@ class _HomeUIState extends State<HomeUI> {
               );
             }
           },
-          child: Card(
-            child: SizedBox(
-              height: 45,
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.location_on),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          "Pick Your Server",
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(Icons.chevron_right),
-                      )),
-                ],
-              ),
-            ),
-          ),
         ),
       ]),
+    );
+  }
+
+  Widget _pickServer(
+      {required IconData icon, required String text, required Function onTap}) {
+    return GestureDetector(
+      onTap: () => onTap(),
+      child: Card(
+        child: SizedBox(
+          height: 50,
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      "Pick Your Server",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              const Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.chevron_right),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _newAlart() {
+    // 11 am - 11 pm US Server is Donwn
+    return Container(
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.red.shade200,
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "US Server is Down",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  Get.back();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Text(
+            "The server is down. Please try again later.",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

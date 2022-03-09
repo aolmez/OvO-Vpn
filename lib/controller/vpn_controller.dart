@@ -10,6 +10,7 @@ class VpnController extends GetxController {
   //
   Vpn? vpn;
   bool haveVpn = false;
+  
   @override
   void onInit() {
     getVPN();
