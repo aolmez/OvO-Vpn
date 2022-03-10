@@ -53,6 +53,7 @@ android {
         applicationId "dev.ovogod.vpn"
         minSdkVersion 21
         multiDexEnabled true
+        compileSdkVersion flutter.compileSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -91,5 +92,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:multidex:2.0.1'
     implementation 'com.google.android.gms:play-services-base:17.5.0'
+    implementation 'com.google.firebase:firebase-analytics:18.0.0'
 }
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
