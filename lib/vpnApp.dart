@@ -52,6 +52,6 @@ class _VPNAppState extends State<VPNApp> {
 // Admob
 // app id : ca-app-pub-7738637538316189~7812476024
 // banner id : ca-app-pub-7738637538316189/2692049277
-// interstitial id : ca-app-pub-7738637538316189/9762538868
+// interstitial  video id : ca-app-pub-7738637538316189/9762538868
 // video ad id : ca-app-pub-7738637538316189/3771845583
 // open app id : ca-app-pub-7738637538316189/8491170865

@@ -34,8 +34,8 @@ class _ServerListUIState extends State<ServerListUI> {
   BannerAd? _bannerAd;
   bool _bannerAdIsLoaded = false;
 
-  InterstitialAd? _interstitialAd;
-  int _numInterstitialLoadAttempts = 0;
+  RewardedInterstitialAd? _rewardedInterstitialAd;
+  int _numRewardedInterstitialLoadAttempts = 0;
 
   static const AdRequest request = AdRequest(
     keywords: <String>['foo', 'bar'],
@@ -46,54 +46,60 @@ class _ServerListUIState extends State<ServerListUI> {
   @override
   void initState() {
     super.initState();
-    _createInterstitialAd();
+    _createRewardedInterstitialAd();
   }
 
-  void _createInterstitialAd() {
-    InterstitialAd.load(
+  void _createRewardedInterstitialAd() {
+    RewardedInterstitialAd.load(
         adUnitId: Platform.isAndroid
-            ? AdmobConfig.interstitialIdIAndroid
-            : 'ca-app-pub-3940256099942544/4411468910',
+            ? AdmobConfig.interstitialVideoIdIAndroid
+            : 'ca-app-pub-3940256099942544/6978759866',
         request: request,
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (InterstitialAd ad) {
-            print('$ad loaded');
-            _interstitialAd = ad;
-            _numInterstitialLoadAttempts = 0;
-            _interstitialAd!.setImmersiveMode(true);
+        rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
+          onAdLoaded: (RewardedInterstitialAd ad) {
+            print('$ad loaded.');
+            _rewardedInterstitialAd = ad;
+            _numRewardedInterstitialLoadAttempts = 0;
           },
           onAdFailedToLoad: (LoadAdError error) {
-            print('InterstitialAd failed to load: $error.');
-            _numInterstitialLoadAttempts += 1;
-            _interstitialAd = null;
-            if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
-              _createInterstitialAd();
+            print('RewardedInterstitialAd failed to load: $error');
+            _rewardedInterstitialAd = null;
+            _numRewardedInterstitialLoadAttempts += 1;
+            if (_numRewardedInterstitialLoadAttempts < maxFailedLoadAttempts) {
+              _createRewardedInterstitialAd();
             }
           },
         ));
   }
 
-  void _showInterstitialAd() {
-    if (_interstitialAd == null) {
-      print('Warning: attempt to show interstitial before loaded.');
+  void _showRewardedInterstitialAd() {
+    if (_rewardedInterstitialAd == null) {
+      print('Warning: attempt to show rewarded interstitial before loaded.');
       return;
     }
-    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (InterstitialAd ad) =>
-          print('ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+    _rewardedInterstitialAd!.fullScreenContentCallback =
+        FullScreenContentCallback(
+      onAdShowedFullScreenContent: (RewardedInterstitialAd ad) =>
+          print('$ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (RewardedInterstitialAd ad) {
         print('$ad onAdDismissedFullScreenContent.');
         ad.dispose();
-        _createInterstitialAd();
+        _createRewardedInterstitialAd();
       },
-      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+      onAdFailedToShowFullScreenContent:
+          (RewardedInterstitialAd ad, AdError error) {
         print('$ad onAdFailedToShowFullScreenContent: $error');
         ad.dispose();
-        _createInterstitialAd();
+        _createRewardedInterstitialAd();
       },
     );
-    _interstitialAd!.show();
-    _interstitialAd = null;
+
+    _rewardedInterstitialAd!.setImmersiveMode(true);
+    _rewardedInterstitialAd!.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+      print('$ad with reward $RewardItem(${reward.amount}, ${reward.type})');
+    });
+    _rewardedInterstitialAd = null;
   }
 
   @override
@@ -151,7 +157,7 @@ class _ServerListUIState extends State<ServerListUI> {
         await prefs.setString('vpnData', vpndata);
         await prefs.setBool('haveVpn', true);
         vpnController.getVPN();
-        _showInterstitialAd();
+        _showRewardedInterstitialAd();
         Get.back();
       },
       child: Container(

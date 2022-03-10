@@ -21,11 +21,13 @@ class UpdateController extends GetxController {
     super.onInit();
   }
 
-  initRemoteConfig() async {
+  Future<void> initRemoteConfig() async {
     try {
       await _remoteConfig.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: const Duration(seconds: 25),
-        minimumFetchInterval: const Duration(hours: 1),
+        fetchTimeout: const Duration(seconds: 5),
+        minimumFetchInterval:  const Duration(
+          seconds:
+              10), 
       ));
       checkRemoteVersion();
     } catch (e) {
@@ -35,7 +37,7 @@ class UpdateController extends GetxController {
     }
   }
 
-  checkRemoteVersion() async {
+  Future checkRemoteVersion() async {
     await _remoteConfig.fetchAndActivate();
     var version = _remoteConfig.getString("force_update_current_version");
     Map<String, dynamic> vpnData = jsonDecode(version);
@@ -43,7 +45,7 @@ class UpdateController extends GetxController {
     update();
   }
 
-  checkUpdate() async {
+  Future checkUpdate() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     var currentVersionRaw = packageInfo.version;
     _appVersion = packageInfo.version;

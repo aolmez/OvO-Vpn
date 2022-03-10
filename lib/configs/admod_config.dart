@@ -6,8 +6,8 @@ class AdmobConfig {
   static const String bannerIdAndroid = isTest
       ? "ca-app-pub-3940256099942544/6300978111"
       : "ca-app-pub-7738637538316189/2692049277";
-  static const String interstitialIdIAndroid = isTest
-      ? "ca-app-pub-3940256099942544/1033173712"
+  static const String interstitialVideoIdIAndroid = isTest
+      ? "ca-app-pub-3940256099942544/5354046379"
       : "ca-app-pub-7738637538316189/9762538868";
   static const String videoAdIdIAndroid = isTest
       ? "ca-app-pub-3940256099942544/5224354917"

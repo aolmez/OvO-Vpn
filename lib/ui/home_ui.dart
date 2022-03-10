@@ -522,7 +522,7 @@ class _HomeUIState extends State<HomeUI> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon),
+                    Icon(icon,color: Colors.green,),
                     const SizedBox(
                       width: 10,
                     ),
