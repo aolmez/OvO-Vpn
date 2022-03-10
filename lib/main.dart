@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:vpn/vpnApp.dart';
 
 void main() async {
@@ -13,6 +14,7 @@ void main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
       await Firebase.initializeApp();
+      MobileAds.instance.initialize();
       FirebaseMessaging.instance.requestPermission();
       AwesomeNotifications().initialize(
           // set the icon to null if you want to use the default app icon

@@ -2,6 +2,7 @@
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -20,6 +21,7 @@ class VPNApp extends StatefulWidget {
 
 class _VPNAppState extends State<VPNApp> {
   static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  FirebaseRemoteConfig controller = Get.put(FirebaseRemoteConfig.instance);
   static FirebaseAnalyticsObserver observer =
       FirebaseAnalyticsObserver(analytics: analytics);
   @override
@@ -46,3 +48,10 @@ class _VPNAppState extends State<VPNApp> {
     );
   }
 }
+
+// Admob
+// app id : ca-app-pub-7738637538316189~7812476024
+// banner id : ca-app-pub-7738637538316189/2692049277
+// interstitial id : ca-app-pub-7738637538316189/9762538868
+// video ad id : ca-app-pub-7738637538316189/3771845583
+// open app id : ca-app-pub-7738637538316189/8491170865
