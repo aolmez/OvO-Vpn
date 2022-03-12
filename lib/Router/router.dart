@@ -14,7 +14,7 @@ class VPNRouters {
     ),
     GetPage(
       name: VPNRoute.home,
-      page: () => const HomeUI(),
+      page: () => HomeUI(),
     ),
     GetPage(
       name: VPNRoute.serverlist,

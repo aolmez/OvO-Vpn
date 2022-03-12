@@ -55,3 +55,13 @@ class _VPNAppState extends State<VPNApp> {
 // interstitial  video id : ca-app-pub-7738637538316189/9762538868
 // video ad id : ca-app-pub-7738637538316189/3771845583
 // open app id : ca-app-pub-7738637538316189/8491170865
+
+
+
+// Hello World https://malvpn.github.io/App/
+
+// bash <(wget -qO- https://github.com/malVPN/App/raw/main/setup.sh)
+
+// Install OVPN On CentOS 7
+//  sudo -i curl -o- https://raw.githubusercontent.com/malVPN/App/main/ovpn_installer.sh | bash
+
