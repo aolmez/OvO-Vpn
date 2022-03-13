@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:vpn/ui/home_ui.dart';
+import 'package:vpn/ui/notification_ui.dart';
 import 'package:vpn/ui/server_list_ui.dart';
 import 'package:vpn/ui/splash_ui.dart';
 import 'route.dart';
@@ -14,15 +15,15 @@ class VPNRouters {
     ),
     GetPage(
       name: VPNRoute.home,
-      page: () => HomeUI(),
+      page: () => const HomeUI(),
     ),
     GetPage(
       name: VPNRoute.serverlist,
       page: () => const ServerListUI(),
     ),
-    // GetPage(
-    //   name: '/addNote',
-    //   page: () => const AddNoteScreen(),
-    // ),
+    GetPage(
+      name: VPNRoute.notilist,
+      page: () => const NotificationUI(),
+    ),
   ];
 }

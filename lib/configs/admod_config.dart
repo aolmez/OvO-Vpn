@@ -2,7 +2,7 @@ class AdmobConfig {
   //
   static const String appId = "ca-app-pub-7738637538316189~7812476024";
 
-  static const bool isTest = false;
+  static const bool isTest = true;
   static const String bannerIdAndroid = isTest
       ? "ca-app-pub-3940256099942544/6300978111"
       : "ca-app-pub-7738637538316189/2692049277";

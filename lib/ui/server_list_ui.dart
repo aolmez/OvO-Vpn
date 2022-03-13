@@ -13,8 +13,6 @@ import 'package:vpn/controller/vpn_controller.dart';
 import 'package:vpn/model/vpn.dart';
 import 'package:vpn/ui/fragment/home_fragment.dart';
 
-import 'home_ui.dart';
-
 class ServerListUI extends StatefulWidget {
   const ServerListUI({Key? key}) : super(key: key);
 
@@ -141,7 +139,7 @@ class _ServerListUIState extends State<ServerListUI> {
                       height: bannerAd!.size.height.toDouble(),
                       width: bannerAd.size.width.toDouble(),
                       child: AdWidget(ad: _bannerAd!))
-                  : SizedBox()
+                  : const SizedBox()
             ],
           );
         },
@@ -210,6 +208,7 @@ class _ServerListUIState extends State<ServerListUI> {
 
   @override
   void dispose() {
+    // ignore: todo
     // TODO: implement dispose
     super.dispose();
     if (Platform.isAndroid) {

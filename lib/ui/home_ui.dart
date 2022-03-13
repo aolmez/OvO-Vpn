@@ -4,7 +4,7 @@ import 'package:vpn/ui/fragment/about_frament.dart';
 import 'package:vpn/ui/fragment/home_fragment.dart';
 
 class HomeUI extends StatefulWidget {
-  HomeUI({Key? key}) : super(key: key);
+ const HomeUI({Key? key}) : super(key: key);
 
   @override
   State<HomeUI> createState() => _HomeUIState();
@@ -39,7 +39,7 @@ class _HomeUIState extends State<HomeUI> {
       onPageChanged: (index) {
         pageChanged(index);
       },
-      children: <Widget>[
+      children: const <Widget> [
         HomeFragment(),
         AboutFragment(),
       ],

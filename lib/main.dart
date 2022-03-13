@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:math';
 
@@ -15,6 +17,8 @@ void main() async {
       WidgetsFlutterBinding.ensureInitialized();
       await Firebase.initializeApp();
       MobileAds.instance.initialize();
+      RequestConfiguration(
+          testDeviceIds: ["64A17126E86385C49F5365F1FB0E3508"]);
       FirebaseMessaging.instance.requestPermission();
       AwesomeNotifications().initialize(
           // set the icon to null if you want to use the default app icon

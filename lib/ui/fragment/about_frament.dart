@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/get_instance.dart';
-import 'package:line_icons/line_icon.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:package_info/package_info.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:vpn/controller/update_controller.dart';
 
 class AboutFragment extends StatefulWidget {
-  AboutFragment({Key? key}) : super(key: key);
+  const AboutFragment({Key? key}) : super(key: key);
 
   @override
   State<AboutFragment> createState() => _AboutFragmentState();
@@ -24,6 +19,7 @@ class _AboutFragmentState extends State<AboutFragment> {
   final String _priurl = 'https://vpn.ovo-god.com/privacypolicy/';
   @override
   void initState() {
+    // ignore: todo
     // TODO: implement initState
     checkVersion();
     super.initState();
@@ -101,7 +97,7 @@ class _AboutFragmentState extends State<AboutFragment> {
             padding: const EdgeInsets.all(8.0),
             child: Text(
               "V $version",
-              style: TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
         ],
