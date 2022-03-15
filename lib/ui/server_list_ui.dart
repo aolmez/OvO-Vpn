@@ -173,6 +173,50 @@ class _ServerListUIState extends State<ServerListUI> {
             style: const TextStyle(
                 color: Colors.black, fontWeight: FontWeight.w800),
           ),
+          subtitle: Row(
+            children: [
+              (vpn.source != null)
+                  ? Container(
+                      padding: const EdgeInsets.only(
+                          top: 5, bottom: 5, right: 8, left: 8),
+                      margin: const EdgeInsets.only(top: 5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.green.shade100,
+                      ),
+                      child: Text(vpn.source!,
+                          style: const TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w800)),
+                    )
+                  : SizedBox(),
+              SizedBox(
+                width: 5,
+              ),
+              (vpn.status != null)
+                  ? Container(
+                      padding: const EdgeInsets.only(
+                          top: 5, bottom: 5, right: 8, left: 8),
+                      margin: const EdgeInsets.only(
+                        top: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: (vpn.status == "live" || vpn.status == "LIVE")
+                            ? Colors.green.shade100
+                            : Colors.red.shade100,
+                      ),
+                      child: Text(vpn.status!,
+                          style: TextStyle(
+                              color:
+                                  (vpn.status == "live" || vpn.status == "LIVE")
+                                      ? Colors.green
+                                      : Colors.red,
+                              fontWeight: FontWeight.w800)),
+                    )
+                  : SizedBox(),
+            ],
+          ),
         ),
       ),
     );

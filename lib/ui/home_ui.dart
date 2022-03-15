@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:vpn/ui/fragment/about_frament.dart';
-import 'package:vpn/ui/fragment/home_fragment.dart';
+
+import 'fragment/home_fragment.dart';
+
 
 class HomeUI extends StatefulWidget {
  const HomeUI({Key? key}) : super(key: key);
@@ -39,7 +41,7 @@ class _HomeUIState extends State<HomeUI> {
       onPageChanged: (index) {
         pageChanged(index);
       },
-      children: const <Widget> [
+      children:  <Widget> [
         HomeFragment(),
         AboutFragment(),
       ],

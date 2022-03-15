@@ -8,6 +8,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_api_availability/google_api_availability.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:vpn/vpnApp.dart';
 
@@ -15,38 +17,10 @@ void main() async {
   await runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
-      await Firebase.initializeApp();
       MobileAds.instance.initialize();
-      RequestConfiguration(
-          testDeviceIds: ["64A17126E86385C49F5365F1FB0E3508"]);
-      FirebaseMessaging.instance.requestPermission();
-      AwesomeNotifications().initialize(
-          // set the icon to null if you want to use the default app icon
-          'resource://drawable/ic_launcher',
-          [
-            NotificationChannel(
-                channelGroupKey: 'ovo_vpn_group',
-                channelKey: 'ovo_vpn_group',
-                channelName: 'OvO VPN',
-                channelDescription: 'Hey My Friend',
-                defaultColor: const Color(0xFF2861FF),
-                ledColor: Colors.white)
-          ],
-          // Channel groups are only visual and are not required
-          channelGroups: [
-            NotificationChannelGroup(
-                channelGroupkey: 'ovo_vpn_group', channelGroupName: 'Vpn group')
-          ],
-          debug: true);
-
-      FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
-      await FirebaseMessaging.instance
-          .setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+      RequestConfiguration(testDeviceIds: ["64A17126E86385C49F5365F1FB0E3508"]);
+       await Firebase.initializeApp();
+      await checkPlayServices();
       FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
       runApp(
         const VPNApp(),
@@ -55,6 +29,51 @@ void main() async {
     (error, stackTrace) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);
     },
+  );
+}
+
+Future<void> checkPlayServices() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  GooglePlayServicesAvailability playStoreAvailability;
+  try {
+    playStoreAvailability = await GoogleApiAvailability.instance
+        .checkGooglePlayServicesAvailability();
+    if (playStoreAvailability == GooglePlayServicesAvailability.success) {
+      print("Google Play Services is available.");
+      await _startFirebase();
+    }
+  } on PlatformException {
+    playStoreAvailability = GooglePlayServicesAvailability.unknown;
+  }
+}
+
+Future<void> _startFirebase() async {
+  await Firebase.initializeApp();
+  FirebaseMessaging.instance.requestPermission();
+  AwesomeNotifications().initialize(
+      // set the icon to null if you want to use the default app icon
+      'resource://drawable/ic_launcher',
+      [
+        NotificationChannel(
+            channelGroupKey: 'ovo_vpn_group',
+            channelKey: 'ovo_vpn_group',
+            channelName: 'OvO VPN',
+            channelDescription: 'Hey My Friend',
+            defaultColor: const Color(0xFF2861FF),
+            ledColor: Colors.white)
+      ],
+      // Channel groups are only visual and are not required
+      channelGroups: [
+        NotificationChannelGroup(
+            channelGroupkey: 'ovo_vpn_group', channelGroupName: 'Vpn group')
+      ],
+      debug: true);
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
   );
 }
 

@@ -1,7 +1,12 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_api_availability/google_api_availability.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:vpn/Router/route.dart';
 
 class SplashUI extends StatefulWidget {
@@ -16,17 +21,40 @@ class _SplashUIState extends State<SplashUI> {
   void initState() {
     // ignore: todo
     // TODO: implement initState
-    noti();
+    checkPlayServices();
 
     super.initState();
+  }
+
+  void checkPermission() async {
+// You can request multiple permissions at once.
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.location,
+      Permission.notification,
+    ].request();
+    noti();
+  }
+
+  Future<void> checkPlayServices() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    GooglePlayServicesAvailability playStoreAvailability;
+    try {
+      playStoreAvailability = await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability();
+      if (playStoreAvailability == GooglePlayServicesAvailability.success) {
+        print("Google Play Services is available.");
+         checkPermission();
+      }else{
+         nextPage();
+      }
+    } on PlatformException {
+     //
+    }
   }
 
   void noti() {
     AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
       if (!isAllowed) {
-        // This is just a basic example. For real apps, you must show some
-        // friendly dialog box before call the request method.
-        // This is very important to not harm the user experience
         AwesomeNotifications().requestPermissionToSendNotifications();
       }
     });
@@ -35,7 +63,6 @@ class _SplashUIState extends State<SplashUI> {
 
   void nextPage() {
     Timer(const Duration(seconds: 2), () {
-      // Get.toNamed(VPNRoute.home);
       Get.offAllNamed(VPNRoute.home);
     });
   }
