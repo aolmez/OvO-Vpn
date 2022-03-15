@@ -48,9 +48,6 @@ class _HomeFragmentState extends State<HomeFragment> {
   RewardedAd? _rewardedAd;
   int _numRewardedLoadAttempts = 0;
 
-// Backgroud  Task
-  bool _enabled = true;
-  int _status = 0;
   List<String> _events = [];
 
   @override
@@ -170,7 +167,7 @@ class _HomeFragmentState extends State<HomeFragment> {
         initPlatformState(vpn: controller.vpn!);
 
         _showRewardedAd();
-        // _onClickEnable(true);
+        _onClickEnable(true);
       } else {
         Get.defaultDialog(
           titlePadding: const EdgeInsets.only(top: 10, bottom: 10),
@@ -577,34 +574,20 @@ class _HomeFragmentState extends State<HomeFragment> {
   Future<void> initPlatformStates() async {
     // Load persisted fetch events from SharedPreferences
     var prefs = await SharedPreferences.getInstance();
-    var json = prefs.getString(EVENTS_KEY);
-    if (json != null) {
-      setState(() {
-        _events = jsonDecode(json).cast<String>();
-      });
-    }
 
     // Configure BackgroundFetch.
     try {
       var status = await BackgroundFetch.configure(
           BackgroundFetchConfig(
-            minimumFetchInterval: 15,
-            //
+            minimumFetchInterval: 45,
+            enableHeadless: true,
+            stopOnTerminate: false,
+            startOnBoot: false,
+            forceAlarmManager: true,
           ),
           _onBackgroundFetch,
           _onBackgroundFetchTimeout);
       print('[BackgroundFetch] configure success: $status');
-      setState(() {
-        _status = status;
-      });
-      BackgroundFetch.scheduleTask(TaskConfig(
-          taskId: "com.transistorsoft.customtask",
-          delay: 30000,
-          // delay: 3600000,
-          periodic: false,
-          forceAlarmManager: true,
-          stopOnTerminate: false,
-          enableHeadless: true));
     } on Exception catch (e) {
       print("[BackgroundFetch] configure ERROR: $e");
     }
@@ -612,15 +595,12 @@ class _HomeFragmentState extends State<HomeFragment> {
   }
 
   void _onBackgroundFetch(String taskId) async {
-    var prefs = await SharedPreferences.getInstance();
     var timestamp = DateTime.now();
     // This is the fetch-event callback.
     print("[BackgroundFetch] Event received: $taskId");
     setState(() {
       _events.insert(0, "$taskId@${timestamp.toString()}");
     });
-    // Persist fetch events in SharedPreferences
-    prefs.setString(EVENTS_KEY, jsonEncode(_events));
     if (stage.toString() == VPNStage.connected.toString()) {
       engine.disconnect();
       print("VPN is disconnected : DONE");
@@ -635,20 +615,11 @@ class _HomeFragmentState extends State<HomeFragment> {
   }
 
   void _onClickEnable(enabled) {
-    setState(() {
-      _enabled = enabled;
+    BackgroundFetch.start().then((status) {
+      print('[BackgroundFetch] start success: $status');
+    }).catchError((e) {
+      print('[BackgroundFetch] start FAILURE: $e');
     });
-    if (enabled) {
-      BackgroundFetch.start().then((status) {
-        print('[BackgroundFetch] start success: $status');
-      }).catchError((e) {
-        print('[BackgroundFetch] start FAILURE: $e');
-      });
-    } else {
-      BackgroundFetch.stop().then((status) {
-        print('[BackgroundFetch] stop success: $status');
-      });
-    }
   }
 
   Widget _pickServer(

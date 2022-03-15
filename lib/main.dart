@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:openvpn_flutter/openvpn_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vpn/vpnApp.dart';
 
@@ -22,13 +23,13 @@ void main() async {
       WidgetsFlutterBinding.ensureInitialized();
       MobileAds.instance.initialize();
       RequestConfiguration(testDeviceIds: ["64A17126E86385C49F5365F1FB0E3508"]);
-       await Firebase.initializeApp();
+      await Firebase.initializeApp();
       await checkPlayServices();
       FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
       runApp(
         const VPNApp(),
       );
-       BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
+      BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
     },
     (error, stackTrace) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);
@@ -119,40 +120,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
-
-/// SharedPreferences data key.
-const EVENTS_KEY = "fetch_events";
-
 /// This "Headless Task" is run when app is terminated.
 void backgroundFetchHeadlessTask(HeadlessTask task) async {
   var taskId = task.taskId;
-  var timeout = task.timeout;
-  if (timeout) {
-    print("[BackgroundFetch] Headless task timed-out: $taskId");
-    BackgroundFetch.finish(taskId);
-    return;
-  }
-
-  print("[BackgroundFetch] Headless event received: $taskId");
-
-  var timestamp = DateTime.now();
-
-  var prefs = await SharedPreferences.getInstance();
-
-  // Read fetch_events from SharedPreferences
-  var events = <String>[];
-  var json = prefs.getString(EVENTS_KEY);
-  if (json != null) {
-    events = jsonDecode(json).cast<String>();
-  }
-  // Add new event.
-  events.insert(0, "$taskId@$timestamp [Headless]");
-  // Persist fetch events in SharedPreferences
-  prefs.setString(EVENTS_KEY, jsonEncode(events));
-
-  if (taskId == 'flutter_background_fetch') {
-    // 
-  }
+  var engine = OpenVPN();
+  engine.disconnect();
   BackgroundFetch.finish(taskId);
 }
 // fvm flutter run | grep -v "Error retrieving thread information"
