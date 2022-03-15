@@ -149,77 +149,89 @@ class _ServerListUIState extends State<ServerListUI> {
 
   Widget item({required Vpn vpn}) {
     return GestureDetector(
-      onTap: () async {
-        final prefs = await SharedPreferences.getInstance();
-        String vpndata = jsonEncode(vpn);
-        print(vpndata);
-        await prefs.setString('vpnData', vpndata);
-        await prefs.setBool('haveVpn', true);
-        vpnController.getVPN();
-        _showRewardedInterstitialAd();
-        Get.back();
-      },
-      child: Container(
-        padding: const EdgeInsets.all(5),
-        margin: const EdgeInsets.only(top: 5, left: 8, right: 8),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.grey.shade200),
-        child: ListTile(
-          contentPadding: const EdgeInsets.only(left: 5),
-          leading: Image.asset("assets/flag/${vpn.cod}.png", height: 35),
-          title: Text(
-            vpn.serverName!,
-            style: const TextStyle(
-                color: Colors.black, fontWeight: FontWeight.w800),
-          ),
-          subtitle: Row(
-            children: [
-              (vpn.source != null)
-                  ? Container(
-                      padding: const EdgeInsets.only(
-                          top: 5, bottom: 5, right: 8, left: 8),
-                      margin: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: Colors.green.shade100,
-                      ),
-                      child: Text(vpn.source!,
+        onTap: () async {
+          final prefs = await SharedPreferences.getInstance();
+          String vpndata = jsonEncode(vpn);
+          print(vpndata);
+          await prefs.setString('vpnData', vpndata);
+          await prefs.setBool('haveVpn', true);
+          vpnController.getVPN();
+          _showRewardedInterstitialAd();
+          Get.back();
+        },
+        child: Container(
+            padding:
+                const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+            margin: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 8),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: Colors.grey.shade200),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Image.asset(
+                      "assets/flag/${vpn.cod}.png",
+                      height: 35,
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          vpn.serverName!,
                           style: const TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w800)),
-                    )
-                  : SizedBox(),
-              SizedBox(
-                width: 5,
-              ),
-              (vpn.status != null)
-                  ? Container(
-                      padding: const EdgeInsets.only(
-                          top: 5, bottom: 5, right: 8, left: 8),
-                      margin: const EdgeInsets.only(
-                        top: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: (vpn.status == "live" || vpn.status == "LIVE")
-                            ? Colors.green.shade100
-                            : Colors.red.shade100,
-                      ),
-                      child: Text(vpn.status!,
-                          style: TextStyle(
-                              color:
-                                  (vpn.status == "live" || vpn.status == "LIVE")
-                                      ? Colors.green
-                                      : Colors.red,
-                              fontWeight: FontWeight.w800)),
-                    )
-                  : SizedBox(),
-            ],
-          ),
-        ),
-      ),
-    );
+                              fontSize: 15,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w800),
+                        ),
+                        (vpn.source != null)
+                            ? Container(
+                                padding: const EdgeInsets.only(
+                                    top: 3, bottom: 3, right: 5, left: 5),
+                                margin: const EdgeInsets.only(top: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.green.shade100,
+                                ),
+                                child: Text(vpn.source!,
+                                    style: const TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600)),
+                              )
+                            : SizedBox(),
+                      ],
+                    ),
+                  ],
+                ),
+                (vpn.status != null)
+                    ? Container(
+                        padding: const EdgeInsets.only(
+                            top: 3, bottom: 3, right: 5, left: 5),
+                        margin: const EdgeInsets.only(top: 3),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: (vpn.status == "live" || vpn.status == "LIVE")
+                              ? Colors.green.shade100
+                              : Colors.red.shade100,
+                        ),
+                        child: Text(vpn.status!,
+                            style: TextStyle(
+                                color: (vpn.status == "live" ||
+                                        vpn.status == "LIVE")
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600)),
+                      )
+                    : SizedBox(),
+              ],
+            )));
   }
 
   @override

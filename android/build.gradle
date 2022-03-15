@@ -20,7 +20,7 @@ allprojects {
         maven {
          // [required] background_fetch
           url "${project(':background_fetch').projectDir}/libs"
-      }
+        }
     }
 
 }
