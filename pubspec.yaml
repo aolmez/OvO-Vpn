@@ -51,6 +51,7 @@ dependencies:
   intl: ^0.17.0
   permission_handler: ^9.2.0
   google_api_availability: ^3.0.1
+  background_fetch: ^1.0.3
 
 
 dev_dependencies:

@@ -2,16 +2,19 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:background_fetch/background_fetch.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:openvpn_flutter/openvpn_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vpn/Router/route.dart';
 import 'package:vpn/configs/admod_config.dart';
 import 'package:vpn/controller/update_controller.dart';
 import 'package:vpn/controller/vpn_controller.dart';
+import 'package:vpn/main.dart';
 import 'package:vpn/model/vpn.dart';
 
 const String testDevice = '64A17126E86385C49F5365F1FB0E3508';
@@ -25,7 +28,6 @@ class HomeFragment extends StatefulWidget {
 }
 
 class _HomeFragmentState extends State<HomeFragment> {
-  
   UpdateController controller = Get.put(UpdateController());
 
   static const AdRequest request = AdRequest(
@@ -45,6 +47,11 @@ class _HomeFragmentState extends State<HomeFragment> {
 
   RewardedAd? _rewardedAd;
   int _numRewardedLoadAttempts = 0;
+
+// Backgroud  Task
+  bool _enabled = true;
+  int _status = 0;
+  List<String> _events = [];
 
   @override
   void initState() {
@@ -68,9 +75,8 @@ class _HomeFragmentState extends State<HomeFragment> {
     super.initState();
     controller.onInit();
     _createRewardedAd();
+    initPlatformStates();
   }
-
-
 
   Future<void> initPlatformState({required Vpn vpn}) async {
     engine.connect(
@@ -162,7 +168,9 @@ class _HomeFragmentState extends State<HomeFragment> {
       if (stage.toString() == VPNStage.disconnected.toString() ||
           stage.toString() == "null") {
         initPlatformState(vpn: controller.vpn!);
+
         _showRewardedAd();
+        // _onClickEnable(true);
       } else {
         Get.defaultDialog(
           titlePadding: const EdgeInsets.only(top: 10, bottom: 10),
@@ -210,7 +218,7 @@ class _HomeFragmentState extends State<HomeFragment> {
               onPressed: () {
                 Get.toNamed(VPNRoute.notilist);
                 print("datea : $cur");
-                
+
                 // FirebaseFirestore.instance.collection("notiHistory").doc("$cur").set(
                 //   {
                 //     "title": "Server Alart",
@@ -563,6 +571,84 @@ class _HomeFragmentState extends State<HomeFragment> {
         ],
       ),
     );
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformStates() async {
+    // Load persisted fetch events from SharedPreferences
+    var prefs = await SharedPreferences.getInstance();
+    var json = prefs.getString(EVENTS_KEY);
+    if (json != null) {
+      setState(() {
+        _events = jsonDecode(json).cast<String>();
+      });
+    }
+
+    // Configure BackgroundFetch.
+    try {
+      var status = await BackgroundFetch.configure(
+          BackgroundFetchConfig(
+            minimumFetchInterval: 15,
+            //
+          ),
+          _onBackgroundFetch,
+          _onBackgroundFetchTimeout);
+      print('[BackgroundFetch] configure success: $status');
+      setState(() {
+        _status = status;
+      });
+      BackgroundFetch.scheduleTask(TaskConfig(
+          taskId: "com.transistorsoft.customtask",
+          delay: 30000,
+          // delay: 3600000,
+          periodic: false,
+          forceAlarmManager: true,
+          stopOnTerminate: false,
+          enableHeadless: true));
+    } on Exception catch (e) {
+      print("[BackgroundFetch] configure ERROR: $e");
+    }
+    if (!mounted) return;
+  }
+
+  void _onBackgroundFetch(String taskId) async {
+    var prefs = await SharedPreferences.getInstance();
+    var timestamp = DateTime.now();
+    // This is the fetch-event callback.
+    print("[BackgroundFetch] Event received: $taskId");
+    setState(() {
+      _events.insert(0, "$taskId@${timestamp.toString()}");
+    });
+    // Persist fetch events in SharedPreferences
+    prefs.setString(EVENTS_KEY, jsonEncode(_events));
+    if (stage.toString() == VPNStage.connected.toString()) {
+      engine.disconnect();
+      print("VPN is disconnected : DONE");
+    }
+    print("VPN is disconnected");
+    BackgroundFetch.finish(taskId);
+  }
+
+  void _onBackgroundFetchTimeout(String taskId) {
+    print("[BackgroundFetch] TIMEOUT: $taskId");
+    BackgroundFetch.finish(taskId);
+  }
+
+  void _onClickEnable(enabled) {
+    setState(() {
+      _enabled = enabled;
+    });
+    if (enabled) {
+      BackgroundFetch.start().then((status) {
+        print('[BackgroundFetch] start success: $status');
+      }).catchError((e) {
+        print('[BackgroundFetch] start FAILURE: $e');
+      });
+    } else {
+      BackgroundFetch.stop().then((status) {
+        print('[BackgroundFetch] stop success: $status');
+      });
+    }
   }
 
   Widget _pickServer(

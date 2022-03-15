@@ -1,9 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:background_fetch/background_fetch.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vpn/vpnApp.dart';
 
 void main() async {
@@ -25,6 +28,7 @@ void main() async {
       runApp(
         const VPNApp(),
       );
+       BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
     },
     (error, stackTrace) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);
@@ -115,6 +119,42 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
+
+/// SharedPreferences data key.
+const EVENTS_KEY = "fetch_events";
+
+/// This "Headless Task" is run when app is terminated.
+void backgroundFetchHeadlessTask(HeadlessTask task) async {
+  var taskId = task.taskId;
+  var timeout = task.timeout;
+  if (timeout) {
+    print("[BackgroundFetch] Headless task timed-out: $taskId");
+    BackgroundFetch.finish(taskId);
+    return;
+  }
+
+  print("[BackgroundFetch] Headless event received: $taskId");
+
+  var timestamp = DateTime.now();
+
+  var prefs = await SharedPreferences.getInstance();
+
+  // Read fetch_events from SharedPreferences
+  var events = <String>[];
+  var json = prefs.getString(EVENTS_KEY);
+  if (json != null) {
+    events = jsonDecode(json).cast<String>();
+  }
+  // Add new event.
+  events.insert(0, "$taskId@$timestamp [Headless]");
+  // Persist fetch events in SharedPreferences
+  prefs.setString(EVENTS_KEY, jsonEncode(events));
+
+  if (taskId == 'flutter_background_fetch') {
+    // 
+  }
+  BackgroundFetch.finish(taskId);
+}
 // fvm flutter run | grep -v "Error retrieving thread information"
 // Fvm build runner gen
 // flutter pub get && flutter pub run build_runner build --delete-conflicting-outputs
