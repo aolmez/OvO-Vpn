@@ -1,63 +1,38 @@
 {
   "project_info": {
-    "project_number": "783899615285",
-    "project_id": "ovo-vpn-f5594",
-    "storage_bucket": "ovo-vpn-f5594.appspot.com"
+    "project_number": "84102572647",
+    "project_id": "ovo-dd",
+    "storage_bucket": "ovo-dd.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:783899615285:android:986359a3a834e5e983917c",
+        "mobilesdk_app_id": "1:84102572647:android:efb2a625a2f0ebb1f8c2c2",
         "android_client_info": {
           "package_name": "dev.ovogod.vpn"
         }
       },
       "oauth_client": [
         {
-          "client_id": "783899615285-85bqka8re2tmla0h3tu6oq6f3irmvkr5.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "dev.ovogod.vpn",
-            "certificate_hash": "3d8c322d2230e6b1e8ffe090cdea3148b8002bc3"
-          }
-        },
-        {
-          "client_id": "783899615285-jdjuv96r15u9orggka62c725f47h14hh.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "dev.ovogod.vpn",
-            "certificate_hash": "4df74e531188385cae0267b76e67ddaeaee684ca"
-          }
-        },
-        {
-          "client_id": "783899615285-t4purnc8s8cmgsbsfd4r3fpd9omcna8b.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "dev.ovogod.vpn",
-            "certificate_hash": "82a4c929b8ec87c264fcf62ed7d67342d3371296"
-          }
-        },
-        {
-          "client_id": "783899615285-edadakm1m32klumgkidcg6elc4d6va65.apps.googleusercontent.com",
+          "client_id": "84102572647-ctgi7ru8ojj15ihrs33rcpgmvls50jgk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDLrOOdQTJE_IdpZqpfARNTA7pukVMSl04"
+          "current_key": "AIzaSyDq_qvqj8MxBYAENNYYbivYaelXKDdbyu0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "783899615285-edadakm1m32klumgkidcg6elc4d6va65.apps.googleusercontent.com",
+              "client_id": "84102572647-ctgi7ru8ojj15ihrs33rcpgmvls50jgk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
         }
-      },
-      "admob_app_id": "ca-app-pub-7738637538316189~7812476024"
+      }
     }
   ],
   "configuration_version": "1"
