@@ -2,15 +2,17 @@
 
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vpn/configs/admod_config.dart';
+import 'package:vpn/controller/server_controller.dart';
 import 'package:vpn/controller/vpn_controller.dart';
 import 'package:vpn/model/vpn.dart';
+import 'package:vpn/network/data_agent.dart';
+import 'package:vpn/network/data_agent_impl.dart';
+import 'package:vpn/network/response/server.dart';
 import 'package:vpn/ui/fragment/home_fragment.dart';
 
 class ServerListUI extends StatefulWidget {
@@ -20,14 +22,10 @@ class ServerListUI extends StatefulWidget {
   State<ServerListUI> createState() => _ServerListUIState();
 }
 
-final vpnsRef =
-    FirebaseFirestore.instance.collection('vpnServer').withConverter<Vpn>(
-          fromFirestore: (snapshots, _) => Vpn.fromJson(snapshots.data()!),
-          toFirestore: (vpn, _) => vpn.toJson(),
-        );
 
 class _ServerListUIState extends State<ServerListUI> {
   VpnController vpnController = Get.find();
+  final ServerController serverController = Get.put(ServerController());
 
   // Admob
   BannerAd? _bannerAd;
@@ -103,34 +101,24 @@ class _ServerListUIState extends State<ServerListUI> {
 
   @override
   Widget build(BuildContext context) {
+    serverController.fetchServers();
     final BannerAd? bannerAd = _bannerAd;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Pick Your Server"),
         centerTitle: true,
       ),
-      body: StreamBuilder<QuerySnapshot<Vpn>>(
-        stream: vpnsRef.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final data = snapshot.requireData;
-
+      body: Obx(() {
+        if (serverController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        } else {
           return Column(
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: data.size,
+                  itemCount: serverController.servers.length,
                   itemBuilder: (context, index) {
-                    return item(vpn: data.docs[index].data());
+                    return serverItem(server: serverController.servers[index]);
                   },
                 ),
               ),
@@ -142,7 +130,92 @@ class _ServerListUIState extends State<ServerListUI> {
                   : const SizedBox()
             ],
           );
-        },
+        }
+      }),
+    );
+  }
+
+  Widget serverItem({required Server server}) {
+    return GestureDetector(
+      onTap: () async {
+        final prefs = await SharedPreferences.getInstance();
+        String vpndata = jsonEncode(server);
+        print(vpndata);
+        await prefs.setString('vpnData', vpndata);
+        await prefs.setBool('haveVpn', true);
+        vpnController.getVPN();
+        _showRewardedInterstitialAd();
+        Get.back();
+      },
+      child: Container(
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+        margin: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.grey.shade200),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Image.asset(
+                  "assets/flag/${server.category!.code ?? "US"}.png",
+                  height: 35,
+                ),
+                const SizedBox(
+                  width: 8,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      server.name ?? "",
+                      style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w800),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        (server.category != null)
+                            ? Container(
+                                padding: const EdgeInsets.only(
+                                    top: 3, bottom: 3, right: 5, left: 5),
+                                margin: const EdgeInsets.only(top: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.green.shade100,
+                                ),
+                                child: Text(server.category?.name ?? "",
+                                    style: const TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600)),
+                              )
+                            : const SizedBox(),
+                        const SizedBox(
+                          width: 3.5,
+                        ),
+                        Text(
+                          server.ip ?? "",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 11),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            /// server status
+          ],
+        ),
       ),
     );
   }

@@ -14,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:openvpn_flutter/openvpn_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vpn/vpnApp.dart';
 
 void main() async {

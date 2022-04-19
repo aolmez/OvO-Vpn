@@ -1,8 +1,6 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:line_icons/line_icons.dart';
@@ -21,56 +19,34 @@ class _NotificationUIState extends State<NotificationUI> {
   BannerAd? _bannerAd;
   bool _bannerAdIsLoaded = false;
 
-  final vpnsRef =
-      FirebaseFirestore.instance.collection('notiHistory').withConverter<Noti>(
-            fromFirestore: (snapshots, _) => Noti.fromJson(snapshots.data()!),
-            toFirestore: (vpn, _) => vpn.toJson(),
-          );
-
   @override
   Widget build(BuildContext context) {
     final BannerAd? bannerAd = _bannerAd;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Notification"),
-      ),
-      body: StreamBuilder<QuerySnapshot<Noti>>(
-        stream: vpnsRef.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final data = snapshot.requireData;
-
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: data.size,
-                  itemBuilder: (context, index) {
-                    return item(noti: data.docs[index].data());
-                  },
-                ),
-              ),
-              (_bannerAdIsLoaded && _bannerAd != null)
-                  ? SizedBox(
-                      height: bannerAd!.size.height.toDouble(),
-                      width: bannerAd.size.width.toDouble(),
-                      child: AdWidget(ad: _bannerAd!))
-                  : const SizedBox()
-            ],
-          );
-        },
-      ),
-    );
+        appBar: AppBar(
+          title: const Text("Notification"),
+        ),
+        body: Container());
   }
+
+  // return Column(
+  //           children: [
+  //             Expanded(
+  //               child: ListView.builder(
+  //                 itemCount: data.size,
+  //                 itemBuilder: (context, index) {
+  //                   return item(noti: data.docs[index].data());
+  //                 },
+  //               ),
+  //             ),
+  //             (_bannerAdIsLoaded && _bannerAd != null)
+  //                 ? SizedBox(
+  //                     height: bannerAd!.size.height.toDouble(),
+  //                     width: bannerAd.size.width.toDouble(),
+  //                     child: AdWidget(ad: _bannerAd!))
+  //                 : const SizedBox()
+  //           ],
+  //         );
 
   Widget item({required Noti noti}) {
     return GestureDetector(
@@ -92,17 +68,17 @@ class _NotificationUIState extends State<NotificationUI> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            const  SizedBox(
+              const SizedBox(
                 height: 5,
               ),
               Text(noti.context!),
-             const SizedBox(
+              const SizedBox(
                 height: 3,
               ),
               Text(noti.time ?? ""),
             ],
           ),
-          trailing:const Icon(
+          trailing: const Icon(
             LineIcons.bellAlt,
             color: Colors.red,
           ),

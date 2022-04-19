@@ -56,6 +56,8 @@ class _VPNAppState extends State<VPNApp> {
 // video ad id : ca-app-pub-7738637538316189/3771845583
 // open app id : ca-app-pub-7738637538316189/8491170865
 
+// fvm flutter packages run build_runner build
+
 
 
 // Hello World https://malvpn.github.io/App/
